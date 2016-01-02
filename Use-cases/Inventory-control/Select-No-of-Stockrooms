@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>Select-No-of-Stockrooms</title>
+    <meta charset="utf-8">
+    <link rel="stylesheet" type="text/css" href="styles/tasks.css" media="screen"/>
+  </head>
+  <body>
+    <header><span>Select-No-of-Stockrooms</span></header>
+    <h2>Basic Path</h2>
+    <div class="basic-path">
+      <ol>
+	<li><p>The use case begins when the Inventory Manager selects
+	    "Select-No-of-Stockrooms".</p></li>
+	<li><p>The software retrieves the current number of stockrooms.</p></li>
+	<li><p>The software prompts the Inventory Manager whether to use
+	    one single stockroom or two stockrooms: one primary and one secondary.
+	    The retrieves current number of stockrooms is used as a default.</p></li>
+	<li><p>If the current number of stockrooms goes from one to two then
+	    inventory within the first stockroom stays at the primary stockroom.</p></li>
+	<li><p>If the current number of stockrooms goes from two to one then
+	    the software prompts the Inventory manager whether to add the inventory
+	    in the second stockroom to the first or to just remove the inventory.
+	    The default is to add the inventory.</p></li>
+	<li><p>The software adds the inventory from the second stockroom to the first
+	    stockroom.</p></li>
+	
+
+    <h2>Alternate Paths</h2>
+    <h3>DB Error</h3>
+  </body>
+
+</html>

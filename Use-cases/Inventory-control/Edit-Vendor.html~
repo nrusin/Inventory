@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>Edit Vendor</title>
+    <meta charset="utf-8">
+
+  </head>
+  <body>
+    <h1>Edit Vendor</h1>
+    <h2>Basic Path</h2>
+    <ol>
+      <li><p>The Inventory Manager selects "View Vendors".</p></li>
+      <li><p>The Inventory Manager selects one of the vendor's.</p></li>
+      <li><p>The software retrieves information about of vendor.</p></li>
+      <li><p>The software prompts for the vendor's name.</p></li>
+      <li><p>The software prompts for the vendor's id.</p></li>
+      <li><p>The software prompts for vendor's id's that replenishments usw.</p></li>
+      <li><p>The software prompts for the vendor's address.  Fields of the
+	     the address are city, state, street, and zip code.</p></li>
+      <li><p>The software prompts for the vendor's phone number.</p></li>
+      <li><p>The software promtps for the vendor's UPC vendor number.</p></li>
+    </ol>
+    
+
+    <h2>Alternate Paths</h2>
+    <h3>DB Error</h3>
+  </body>
+
+</html>

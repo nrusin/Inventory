@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>Add Department</title>
+    <meta charset="utf-8">
+
+  </head>
+  <body>
+    <h1>Add Department</h1>
+    <h2>Basic Path</h2>
+    <ol>
+      <li><p>Include <a href="View-Departments.html">View Departments"</a></p></li>
+      <li><p>The use case begins when the Inventory Manager selects "Add Department".</p></li>
+      <li><p>The software retrieves the types of units that are being used. </li>
+      <li><p>The software retrieves the department names and their corresponding department numbers
+	  that are being used.</p></li>
+      <li><p>The software finds a default number by adding one to
+	     the maxiumum current department number.</p></li>
+      <li><p>The software prompts for the department's name, department number
+	  and department group.</p></li>
+      <li><p>Using the types of units retrieved previously, the software prompts for
+	  the department's default unit type.</p></li>
+      <li><p>The software checks that the department name and number are unique.</p></li>
+      <li><p>The software creates a department using the department name,
+	  number, and default unit type.</p><li>
+      <li><p>The software updates any listing of departments.</p></li>
+    </ol>
+    
+    <h2>Alternate Paths</h2>
+    <h3>DB Error</h3>
+  </body>
+
+</html>

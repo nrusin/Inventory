@@ -1,0 +1,51 @@
+#!/usr/bin/perl
+use strict;
+use warnings;
+
+my $doc;
+
+
+$doc = <<END;
+<!DOCTYPE html>
+<html lang="en">
+   <head>
+       <title>Inventory Use Cases</title>
+       <meta charset="utf-8">
+   </head>
+   <body>
+       <h1>Use Cases</h1>
+       <ol>
+END
+
+    print $doc;
+
+      
+
+my $directory = "./";
+
+opendir(DIR, $directory) or die $!;
+
+while(my $file = readdir(DIR)) {
+    $_ = $file;
+    s/\.html//;
+
+    if (!($file =~ /^\./ || $file =~ /~$/)) {
+	if ($file ne "index.html") {
+	    print "            <li><a href = \"$file\">$_</a></li>\n";
+	}
+    }
+}
+
+$doc = <<END;
+        </ol>
+    </body>
+</html>
+    
+END
+
+print $doc;
+    
+
+# at  end
+
+

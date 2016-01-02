@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>Build Pick Order</title>
+    <meta charset="utf-8">
+    <link rel="stylesheet" type="text/css" href="styles/tasks.css" media="screen" />
+  </head>
+  <body>
+    <header><span>Build Pick Order</span></header>
+    <h2>Basic Path</h2>
+    <div class="basic-path">
+      <ol>
+	<li><p>The software begins when the Inventory Manager
+	    selects "Pick Order Managerment".</p></li>
+	<li><p>The Inventory Manager selects "Build Pick Order".</p></li>
+	<li><p>The software checks that two stockrooms are being used. Two stockrooms
+	    are being used. </p></li>
+	<li><p>The software prompts for the Inventory Manager for
+	    the department groups to show or departments to show. </p></li>
+	<li><p>The Inventory Manager enters the departments and department groups to show.</p></li>
+	<li><p>For each department</p></li>
+	<ol>
+	  <li><p>The software finds products with the department.</p></li>
+	  <li><p>The software finds the quantity on hand of the product
+	      in the secondary stockroom.</p></li>
+	  <li><p>The software finds the quantity on hand of the product
+	      in the primary stockroom.</p></li>
+	  <li><p>The software retrieves the product's par of the secondary stockroom.</p></li>
+	  <li><p>If there is no secondary par, the default is average sold in two days. </p></li>
+	  
+	  <li><p>The software determines an order quantity by ordering upto the secondary
+	      par.</p></li>
+	  <li><p>If the order quantity is greater than the quantity on hand within the
+	    primary stockroom, the order quantity is reduced so that the order
+	      is possible.</p></li>
+	  <li><p>The software adds the product and ordered quantity to the pick order.</p></li>
+	</ol>
+	
+	<li><p>The software enters the pick order under today's date.</p></li>
+	<li><p>The software shows the pick order to the Inventory Manager. The default
+	    order is alphabetical, by department then description, but the order may be sorted
+	    by department then quantity ordered. The software prompts the Inventory
+            Manager for the shipped quantities. </p></li>
+	<li><p>The software allows the Inventory Manager to print the pick order such
+	    that it may be filled.</p></li>
+	<li><p>The Inventory Manager fills out the shipped quantities.</p></li>
+	<li><p>The software highlights any descrepencies.</p></li>
+	<li><p>The software prompts the Inventory Manager to OK the pick order. </p></li>
+	<li><p>The Inventory Manager agrees.</p></li>
+	<li><p>The software creates a new transfer using the specific pick order.</p></li>
+      </ol>
+    </div>
+    <h2>Alternate Paths</h2>
+    <h3>DB Error</h3>
+  </body>
+
+</html>

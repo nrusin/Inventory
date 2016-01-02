@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>Add-Product</title>
+    <link rel="stylesheet" type="text/css" href="styles/tasks.css" media="screen" />
+    
+    <meta charset="utf-8">
+
+  </head>
+  <body>
+    <header><span>Add-Product</span></header>
+    <h2>Basic Path</h2>
+    <div class="basic-path">
+      <ol>
+	<li><p>The Inventory Manager selects <a href="View-Products.html">View-Products</a></p></li>
+	<li><p>The Inventory Manager selects "Add Product".</p></li>
+	<li><p>The software retrieves the available vendors.</p></li>
+	<li><p>The software checks that there is at least one vendor. If there is
+	     only one vendor the software uses that vendor automatically.</p></li>
+	<li><p>The software retrieves the available departments.</p></li>
+	<li><p>The software checks that there is at least one department. If there is
+	    only one department the software uses that department automatically.</p></li>
+	<li><p>The software retrieves the available unit types.</p></li>
+	<li><p>The software prompts the Inventory Manager for the product's UPC.</p></li>
+	<li><p>The software prompts for the product's description, price per item, cost per
+	    ordering unit, par, ordering units, economic ordering unit, vendor,
+	    category id, item #, default unit type, primary par, and secondary par.</p></li>
+	<li><p>If an EOQ is not entered but an order by units is, then the EOQ is the
+	    by default the same values as that of the order by units.</p></li>
+	<li><p>The Inventory Manager enters values for the above prompts.</p></li>
+	<li><p>The software checks that the UPC is either unique or empty.</p></li>
+	<li><p>The software checks that the item number is either unique or empty.</p></li>
+	<li><p>The software checks that the UPC is a valid UPC.</p></li>
+	<li><p>The software checks that the description is unique and non-empty.</p></li>
+	<li><p>The software checks that the order by units is non-empty, positive, integer.</p></li>
+	<li><p>The software checks that the par is a non-empty integer, greater than 0.</p></li>
+	<li><p>The software checks that the eoq is a non-empty integer, greater than 0.</p></li>
+	<li><p>The software checks that the case pack is a non-empty integer, greater
+	    than 0.</p></li>
+	<li><p>With the entered values, the software creates a new product. </p></li>
+	<li><p>The software stores the product persistently.</p></li>
+	<li><p>The software updates any listing of products.</p></li>
+    </div>
+      
+    <h2>Alternate Paths</h2>
+    <h3>DB Error</h3>
+    <h3>No Vendors</h3>
+    <h3>No Departments</h3>
+    <h3>Invalid Upc</h3>
+    <h3>Invalid product information</h3>
+  </body>
+
+</html>

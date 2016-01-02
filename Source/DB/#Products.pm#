@@ -1,0 +1,232 @@
+#!/usr/bin/perl
+
+use DB::ProductsIterator;
+use DB::Product;
+use Data::Dumper;
+
+
+
+
+package DB::Products;
+
+
+sub new {
+    my $class = shift;
+    
+
+    my $self  = {
+	dbh => shift
+    };
+
+    if (!defined($self->{dbh})) {
+	die "dbh must be defined!\n";
+    }
+    
+    
+    bless $self, $class;
+}
+
+sub update {
+    my $self = shift;
+
+    my $product_info = shift;
+
+}
+
+
+# Products::insert_product
+sub insert {
+    my $self = shift;
+    my $product_info = shift;
+
+
+    my $dbh = $self->{dbh};
+    my $sku;
+
+
+
+#    $sku = Product->make_product($dbh);
+
+
+#    my $product = Product->new($dbh, $sku);
+
+#    $product->set_description("foobar");
+
+#    $product->set_product_info($product_info);
+
+    my $d = Data::Dumper->new([$dbh, $product_info], ["dbh", "product_info"]);
+
+
+    print $d->Dump;
+
+
+    $sku = DB::Product->make_product_with_info($dbh, $product_info);
+    my $product = DB::Product->new($dbh, $sku);
+
+
+    return $product;
+}
+sub update_products_info {
+    my $self = shift;
+    my $product_info = shift;
+    
+#    my $upc = $product_info->get_upc();
+
+#    if (!defined($upc)) {
+#	return;
+ #   }
+
+#    my $product = $self->lookup_by_upc($upc);
+
+
+    my $item_no = $product_info->get_item_no();
+
+#    print "ITEM_NO = " . $item_no . "\n";
+
+    my $product = $self->lookup_by_item_no($item_no);
+
+    
+    if (!defined($product)) {
+	$product = $self->insert($product_info);
+
+    } else {
+	$product->update_product_info($product_info);
+    }
+}
+
+
+
+
+sub lookup_by_item_no {
+    my $self = shift;
+    my $item_no = shift;
+
+    my $dbh = $self->{dbh};
+
+
+    my $sth = $dbh->prepare("SELECT SKU
+                             FROM Products
+                             WHERE item_no = ?");
+
+
+    $sth->bind_param(1, $item_no);
+
+    
+    if (!$sth->execute()) {
+	die "lookup_by_item_no failed at execute!\n";
+    }
+
+
+    my $sku;
+
+    while(my ($s) = $sth->fetchrow_array()) {
+	$sku = $s;
+    }
+
+    if (DBI::err) {
+	die DBI::errstr;
+
+    }
+    
+    if (!defined($sku)) {
+	return undef;
+    }
+
+    return DB::Product->new($dbh, $sku);
+
+}
+
+
+sub lookup_by_upc {
+    my $self = shift;
+    my $upc = shift;
+
+    my $dbh = $self->{dbh};
+
+
+    if (!defined($upc)) {
+	Carp::confess("lookup_by_upc failed: upc not defined!\n");
+
+    }
+
+    my $upc_str = $upc->str();
+
+
+    my $sth = $dbh->prepare("SELECT SKU
+                             FROM Products
+                             WHERE upc = ?");
+
+    
+    $sth->bind_param(1, $upc_str, DBI::SQL_VARCHAR);
+
+
+    if (!$sth->execute()) {
+	die "lookup_by_upc failed at execute!\n";
+
+    }
+
+    my $s;
+    my $sku;
+
+    while(($s) = $sth->fetchrow_array()) {
+	$sku = $s;
+    }
+
+    if ($sku) {
+	return DB::Product->new($dbh, $sku);
+    } else {
+	
+	if ($upc->is_upc_a()) {
+	    $upc->convert_to_upc_e();
+	} elsif ($upc->is_upc_e()) {
+	    $upc->convert_to_upc_a();
+	}
+
+	$sth = $dbh->prepare("SELECT SKU
+                              FROM Products
+                              WHERE upc = ?");
+
+	$sth->bind_param(1, $upc->str(), DBI::SQL_VARCHAR);
+
+	if (!$sth->execute()) {
+	    die "lookup_by_upc failed at lookup_by_upc!\n";
+	}
+	    
+
+
+	while(($s) = $sth->fetchrow_array()) {
+	    $sku = $s;
+
+	}
+
+	if ($sku) {
+	    return DB::Product->new($sku);
+	}
+
+	# Convert UPC back to its original format if it was changed
+	if ($upc->is_upc_e()) {
+	    $upc->convert_to_upc_a();
+	} elsif($upc->is_upc_a()) {
+	    $upc->convert_to_upc_e();
+	}
+
+    }
+
+
+    
+
+
+    return undef;
+}
+
+sub get_iterator {
+    my $self = shift;
+    my $dbh = $self->{dbh};
+
+    my $pi = DB::ProductsIterator->new($dbh);
+
+    return $pi;
+
+}
+
+1

@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>Template</title>
+    <meta charset="utf-8">
+    <link rel="stylesheet" type="text/css" href="styles/tasks.css" media="screen"/>
+  </head>
+  <body>
+    <header>Add Transfer</header>
+    <h2>Basic Path</h2>
+    <div class="basic-path">
+      <ol>
+	<li><p>The use case begins when the Inventory Manager selects "Add-Transfer".</p></li>
+	<li><p>The software checks whether one or two stockrooms are being used.</p></li>
+	<li><p>Two stockrooms are being used.</p></li>
+	<li><p>The software retrieves the units types being used.</p></li>
+	<li><p>The software prompts for the direction of the transfer.
+	    By default the transfer is from the secondary stockroom
+	    to the primary stockroom.</p></li>
+	<li><p>The Inventory Manager enters the direction of the transfer.</p></li>
+	<li><p>For each product that the Inventory Manager adds to the transfer</p></li>
+	<ol>
+	  <li><p>The software prompts for the Inventory Manager to identify the product,
+	      either by SKU, upc, or description.</p></li>
+	  <li><p>The Inventory Manager identifies the product.</p></li>
+	  <li><p>The software checks that the product was not priorly entered into the
+	         transfer.</p></li>
+	  <li><p>The software retrieves the default unit type for the product.</p></li>
+	  <li><p>The software prompts the Inventory for the number of items transfered
+	      and their unit type.</p></li>
+	  <li><p>The Inventory Manager enters the number of items and its unit type.</p></li>
+	</ol>
+
+
+	<li><p>The software checks that at least one product has been added to the transfer.</p></li>
+	<li><p>The software adds the transfer. The transfer is unlinked to any particular
+	       pick order</p></li>
+	<li><p>The software updates any listing of transfers.</p></li>
+      </ol>
+
+      
+    </div>
+    
+    <h2>Alternate Paths</h2>
+
+    <h3>DB Error</h3>
+</body>
+
+</html>

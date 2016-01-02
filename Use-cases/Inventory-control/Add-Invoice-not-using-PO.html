@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>Add-Invoice not using PO</title>
+    <meta charset="utf-8">
+    <link rel="stylesheet" type="text/css" href="styles/tasks.css" media="screen" />
+  </head>
+  <body>
+    <header><span>Add-Invoice not using PO</span></header>
+    <h2>Basic Path</h2>
+    <div class="basic-path">
+    <ol>
+      <li><p>The use case begins when the Inventory Manager selects "Add Invoice".</p></li>
+      <li><p>The software retrieves the possible vendors.</p></li>
+      <li><p>The software checks that there is at least one vendor.</p></li>
+      <li><p>If there is only one vendor then the software automatically picks that one
+	     vendor to use for the add invoice.</p>
+      <li><p>The software retrieves the possible stockrooms.</p></li>
+      <li><p>The software checks that there is at least one stockroom.</p></li>
+      <li><p>If there is only one stockroom then the software automatically picks that one
+	     stockroom.</p></li>
+      <li><p>The software retrieves the possible shipping methods.</p></li>
+      <li><p>The software prompts the Inventory Manager for the invoice number, invoice's PO,
+	  invoice's shipping datetime, stockroom, vendor and when the invoice was received.</p></li>
+      <li><p>The shipping method, invoice number, invoice PO, shipping datetime
+	     can be left empty. </p></li>
+      <li><p>The software checks that the invoice's PO is not used by another invoice.</p></li>
+      <li><p>The software checks that the invoice's PO is not linked to a prior order.</p></li>
+      <li><p>The software checks that the invoice's invoice number is not used by any other
+	     invoice of the same vendor.</p></li>
+      <li><p>For each product that the Inventory Manager wants to add to the invoice</p></li>
+	<ol>
+	  <li><p>The software allows multiple ways to enter the products.</p></li>
+	  <li><p>The software manager may enter the product's description. If parts of the
+	      description are unknown he or she may hit tab and the description will
+	      auto expand to the correct description with prefix, or if there are multiple
+	      products allow the Inventory Manager to select between them. (Like on Emacs). If
+	      shift-tab is used, all possible substrings with the products are used. </p></li>
+	  <li><p>The software manager may enter the UPC, either by hand or bar code. If the
+	      UPC is not found, the software will allow the Inventory Manager to create
+	      a new product. After the product is created the software will\ use that
+	      product for the entry. If only 6 or 3 digits of the UPC are entered the software
+	      tries to find the correct product using these as the last digits. If multiple products
+	      are found they are shown the Inventory Manager who may select them. The first letter of the
+	      vendor followed by the last 6 or last 3 digits may also be used to differentiate between
+	      them as well. </p></li>
+	  <li><p>The software manager may enter the product's SKU.</p></li>
+	  <li><p>The software checks that the product is uniquely identified.</p></li>
+	  <li><p>After uniquely identifying the product, the software retrieves
+	         the default unit type of the product. </p></li>
+	  <li><p>The software prompts the Inventory Manager for the received quantity
+	      and unit type, using the default unit type.</p></li>
+	  <li><p>As we are not creating the invoice from the PO, the shipped quantity is always
+	         equal to the ordered quantity.</p></li>
+	  <li><p>The software checks that the received quantity is an integer,
+	         greater than 0.</p></li>
+	  <li><p>The software allows the Inventory Manager to remove
+	         a previously added product.</p></li>
+	  
+	    
+	</ol>
+      <li><p>The software prompts the Inventory Manager whether to add the invoice.</p></li>
+    </ol>
+    </div>
+    
+	      
+	      
+	
+    <h2>Alternate Paths</h2>
+    <h3>Invoice's PO is linked to a prior order</h3>
+    <div class="alternate-path">
+      <ol>
+	<li><p>The software checks that the PO number entered is not being used by any other
+	    PO.</p></li>
+	<li><p>The PO is being used by another PO. Include
+	    <a href="Add-Invoice-link-using-linked-PO.html">Add-Invoice-using-linked-PO</a></p></li>
+	    
+
+      </ol>
+    </div>
+      
+	
+    <h3>DB Error</h3>
+  </body>
+
+</html>

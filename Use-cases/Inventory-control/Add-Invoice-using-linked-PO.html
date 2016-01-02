@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>Add-Invoice using linked-PO</title>
+    <meta charset="utf-8">
+    <link rel="stylesheet" type="text/css" href="styles/tasks.css" media="screen" />
+  </head>
+  <body>
+    <header><span>Add-Invoice-using-linked-PO</span></header>
+    <div class="basic-path">
+      <h2>Basic Path</h2>
+      <ol>
+	<li><p>The software checks that the invoice's PO is linked to a prior order.</p></li>
+	<li><p>From the PO number, the software retrieves the priorly ordered products, that is,
+	       the product's identifying information ordered quantity and units</p></li>
+	<li><p>For each product on the order</p></li>
+	<ol>
+	  <li><p>The software prommpts the Inventory Manager for the shipped quantity. </p></li>
+	  <li><p>The Inventory Manager enters the shipped quantity. The default is 0.</p></li>
+	</ol>
+	<li><p>The software allows the Inventory manager to add another product that may have been
+	    delivered but was not on the order. This adding of products is done similary as
+            in adding an invoice not linked to a PO.</p></li>
+	<li><p>The software checks that the added product is not already on the invoice.
+	    If it is, the priorly entered product is shown to the Inventory Manager and the
+	    additional add is aborted. If the addition is done using a barcode scanner the
+	    priorly added product is highlighted and the additional quantity shipped is added
+	    to the prior quantity.
+	</p></li>
+	
+	<li><p>Differences between the shipped quantity and the ordered
+	    quantity are highlighted.</p></li>
+      </ol>
+    </div>
+	
+    <h3>DB Error</h3>
+  </body>
+
+</html>

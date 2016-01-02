@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>View Departments</title>
+    <meta charset="utf-8">
+
+  </head>
+  <body>
+    <h1>View Departments</h1>
+    <h2>Basic Path</h2>
+    <ol>
+      <li><p>The use case begins when the Inventory Manager selects "View Departments".</p></li>
+      <li><p>The software retrieves the department names and numbers. </p></li>
+      <li><p>The software shows the department names and numbers to the Inventory Manager. </p></li>
+      <li><p>The Inventory Manager selects one of the departments.</p></li>
+      <li><p>The software retrieves the default unit types currently being used.</p></li>
+      <li><p>The software prompts for the department name, department number,
+	  and default unit type.</p></li>
+      <li><p>The Inventory Manager enters the department name, department number, and default
+	  unit type.</p></li>
+      <li><p>The software prompts whether to update.</p></li>
+      <li><p>The Inventory Manager chooses to go ahead and update the department.</p></li>
+      <li><p>With the department name, number and default unit type, the software updates
+	  the department.</p></li>
+      <li><p>The software updates any prior listings of departments.</li>
+
+    <h2>Alternate Paths</h2>
+    <h3>DB Error</h3>
+  </body>
+
+</html>

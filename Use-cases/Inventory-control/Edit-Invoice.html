@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>Edit Invoice</title>
+    <meta charset="utf-8">
+    <link rel="stylesheet" type="text/css" href="styles/tasks.css" media="screen" />
+  </head>
+  <body>
+    <header><span>Edit Invoice</span></header>
+    <div class="basic-path">
+      <h2>Basic Path</h2>
+      <ol>
+	<li><p>Include "View Invoices".</p></li>
+	<li><p>The Inventory Manager selects one of the invoices
+	    to edit.</p></li>
+	
+	<li><p>The software retrieves the list of possible vendors.</p></li>
+	<li><p>The software retrieves the list of possible stockrooms.</p></li>
+	<li><p>The software retrieves the possible shipping methods.</p></li>
+	<li><p>The software retrieves the invoice's information.</p></li>
+	<li><p>For the following prompts, the software uses the invoice
+	    information for defaults.</p></li>
+	<li><p>The software prompts the Inventory Manager for the invoices number,
+	    invoices PO, invoice's shipping datetime, stockroom, vendor, and
+	    when the invoice was received.</p></li>
+	<li><p>The software checks that the invoice's PO is not used by another invoice.</p></li>
+	<li><p>The software checks that the invoice's PO is not linked to a prior order.</p></li>
+	<li><p>The software checks that the invoice's invoice number is not used by any other
+	    invoice of the same vendor.</p></li>
+	<li><p>For each product on the invoice</p></li>
+	<ol>
+	  <li><p>The software will allow multiple ways to enter the products.</p></li>
+	  <li><p>The software manager may enter the product's description. If parts of the
+	      description are unknown he or she may hit tab and the description will
+	      auto expand to the correct desription with prefix, or if there are multiple,
+	      products allow the Inventory Manager to select between them. (Link on Emacs).
+	      If shift-tab is used, all possible substrings with the products are used.</p></li>
+	  <li><p>The software manager may enter the UPC, either by hand or bar code.
+	      If the UPC is not found, the software will allow the Inventory Manager
+	      to create a new product. After the product is created the software will
+	      use that product for the entry. If only 6 or 3 digits of the UPC are entered
+	      the software tries to find the correct product using theses as the last digits.
+	      If multiple products are found they are shown the Inventory Manager who may select
+	      them. The first letter of the vendor followed by the last 6 or last 3 digits may
+	      also be used to differrentiate between them as well.</p></li>
+	  <li><p>The software manager may enter the product's SKU.</p></li>
+	  <li><p>Check that the product is uniquely identified.</p></li>
+	  <li><p>After uniquely identifying the product, the software retrieves the default unit type
+	      of the product.</p></li>
+	  <li><p>The software prompts the Inventory for the received quantity and unit type,using
+	      the default unit type.</p></li>
+	  <li><p>As we are not editing an invoice from the pO, the shipped quantity is always equal
+	      to the ordered quantity.</p></li>
+	  <li><p>The software checks that the received quantity is an integer, greater than 0.</p></li>
+	  <li><p>The software allows the Inventory Manager to remove a previously added invoice.</p></li>
+	</ol>
+	<li><p>The software prompts the Inventory Manager whether to update the invoice.</p></li>
+	</div>
+    <h2>Alternate Paths</h2>
+    <h3>DB Error</h3>
+  </body>
+
+</html>

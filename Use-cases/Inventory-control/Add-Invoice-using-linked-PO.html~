@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>Add-Invoice using linked-PO</title>
+    <meta charset="utf-8">
+
+  </head>
+  <body>
+    <h1>Add-Invoice-using-linked-PO</h1>
+    <h2>Basic Path</h2>
+    <ol>
+      <li><p>The software checks that the invoice's PO is not linked to a prior order.</p></li>
+      <li><p>The invoice's PO is linked to a prior order.</p></li>
+      <li><p>The software retrieves the prior order's products that were ordered. </p></li>
+      <li><p>For each product on the order</p></li>
+      <ol>
+	<li><p>The software prommpts the Inventory Manager for the shipped quantity. </p></li>
+	<li><p>The Inventory Manager enters the shipped quantity. The default is 0.</p></li>
+      </ol>
+      <li><p>The software allows the Inventory manager to add another product that may have been
+	  delivered but was not on the order. This adding of products is done similary as
+          above in the basic path.</p></li>
+      <li><p>Differences between the shipped quantity and the ordered quantity are highlighted.</p></li>
+    </ol>
+      
+	
+    <h3>DB Error</h3>
+  </body>
+
+</html>

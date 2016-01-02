@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>Template</title>
+    <meta charset="utf-8">
+    <link rel="stylesheet" type="text/css" href="styles/tasks.css" media="screen"/>
+  </head>
+  <body>
+    <header><span>Update-Products</span></header>
+    <h2>Basic Path</h2>
+    <div class="basic-path">
+      <ol>
+	<li><p>The use case begins when the Inventory Manager selects
+	    "Update-Products".</p></li>
+	<li><p>The software promts the Inventory Manager for the xlsx spreadsheet
+	       with the product information.</p></li>
+	<li><p>The Inventory Manager enters the spreadsheet filename.</p></li>
+	<li><p>The software checks that the spreadsheet is in the right format.</p></li>
+	<li><p>The software reads the spreadsheet.</p></li>
+	<li><p>For each product in the spreadsheet</p></li>
+	<ol>
+	  <li><p>The software reads the product's description, upc, eoq and price.</p></li>
+	  <li><p>The software looks up the product using the upc.</p></li>
+	  <li><p>The software updates the product's description, upc, eoq, and price.</p></li>
+
+      </ol>
+    </div>
+
+    <h2>Alternate Paths</h2>
+    <h3>DB Error</h3>
+  </body>
+
+</html>

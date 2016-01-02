@@ -1,0 +1,45 @@
+#!/usr/bin/perl -w
+use strict;
+use warnings;
+
+
+use Glib qw/TRUE FALSE/;
+use Gtk2 '-init';
+
+sub add_vendor_dialog {
+    my $parent_window = shift;
+    my $title = "Add Vendor";
+
+    my $flags;
+
+    
+    my $dialog = Gtk2::Dialog->new($title, $parent_window,
+				   'destroy-with-parent',
+				   'gtk-cancel' => 'cancel',
+				   'OK'      => 'ok');
+
+    $dialog->set_default_response('ok');
+
+
+    $dialog->signal_connect(response => sub { $_[0]->destroy });
+
+    
+
+    $dialog->show;
+
+
+}
+
+
+my $topWindow = Gtk2::Window->new('toplevel');
+
+
+$topWindow->show;
+
+add_vendor_dialog($topWindow);
+
+Gtk2->main;
+
+
+1;
+

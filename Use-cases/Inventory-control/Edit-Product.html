@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>Edit Product</title>
+    <meta charset="utf-8">
+    <link rel="stylesheet" type="text/css" href="styles/tasks.css" media="screen" />
+  </head>
+  <body>
+    <header><span>Edit Product</span></header>
+    <div class="basic-path">
+      <h2>Basic Path</h2>
+      <ol>
+	<li><p>Include "View Products".</p></li>
+	<li><p>The Inventory Manager selects one of the products to edit.</p></li>
+	<li><p>The software retrieves the available vendors.</p></li>
+	<li><p>The software retrieves the available departments.</p></li>
+	<li><p>The software retrieves the available unit types.</p></li>
+	<li><p>The software retrieves the information about the selected product.</p></li>
+	<li><p>The software uses the retrieved information as defaults.</p></li>
+	<li><p>The software prompts the Inventory Manager for the product's UPC.</p></li>
+	<li><p>The software prompts for the product's description, price per item, cost
+	    per ordering unit, par, ordering units, economic ordering unit, vendor,
+	    category id, item #, default unit type, primary par, and secondary par.</p></li>
+	<li><p>If an EOQ is not entered but an order by units is, then the EOQ is the by default the
+	    same values as that of the order by units.</p></li>
+	<li><p>The Inventory Manager enters values for the above prompts.</p></li>
+	<li><p>The software checks that the UPC is either unique or empty.</p></li>
+	<li><p>The software checks that the item number is eithe4r unique or empty.</p></li>
+	<li><p>The software checks that the UPC is a valid UPC.</p></li>
+	<li><p>The software checks that the description is unique and non-empty.</p></li>
+	<li><p>The software checks that the order by units is non-empty, positive, integer.</p></li>
+	<li><p>The software checks that the par is a non-empty integer, greater than 0.</p></li>
+	<li><p>The software checks that the eoq is a non-empty integer, greater than 0.</p></li>
+	<li><p>The software checks that the case pack is a non-empty integer, greater than 0.</p></li>
+	<li><p>With the entered values, the software creates a new product.</p></li>
+	<li><p>The software updates the product persistently.</p></li>
+	<li><p>The software updates any listing of the updated product.</p></li>
+    </div>	
+	
+	  
+    <h2>Alternate Paths</h2>
+    <h3>DB Error</h3>
+  </body>
+
+</html>

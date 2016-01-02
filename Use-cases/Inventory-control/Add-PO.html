@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>Add PO</title>
+    <meta charset="utf-8">
+    <link rel="stylesheet" type="text/css" href="styles/tasks.css" screen="media" />
+  </head>
+  <body>
+    <header><span>Add PO</span></header>
+    <h2>Basic Path</h2>
+    <div class="basic-path">
+      <ol>
+	<li><p>The use case begins when the Inventory Manager selects "Add PO".</p></li>
+	<li><p>The software retrieves the possible vendors to use.</p></li>
+	<li><p>The software checks that there is at least one vendor.</p></li>
+	<li><p>If there is only one possible vendor, the software goes ahead and uses
+	    that vendor.</p></li>
+	<li><p>The software prompts for the PO number.</p></li>
+	<li><p>The software promtps for the vendor.</p></li>
+	<li><p>While the Inventory Manager is not done adding products</p>
+	  <ol>
+	    <li><p>The software prompts for the product.</p></li>
+	    <li><p>The Inventory Manager enters the product, either by entering the
+		product's SKU, UPC, last 6 digits of UPC, or description.</p></li>
+	    <li><p>The software checks that the product is not
+		already on the purchase order.</p></li>
+	    <li><p>The software retrieves the default unit type for the product selected.</p></li>
+	    <li><p>The software prompts the Inventory Manager for the unit to use, using
+		the default. </p></li>
+	    <li><p>The software prompts the Inventory Manager for the quantity ordered. </p></li>
+	    <li><p>The Inventory Manager enters the quantity and unit type of the product
+		ordered.</p></li>
+	  </ol>
+	<li><p>After the Inventory Manager is done adding products, the software prompts
+	    whether to add the PO.</p></li>
+	<li><p>The Inventory Manager chooose to add the PO.</p></li>
+	<li><p>The software adds the PO.</p></li>
+	<li><p>The software updates any listing of POs.</p><li>
+      </ol>
+    </div>
+
+	      
+    
+    
+    <h2>Alternate Paths</h2>
+    <h3>DB Error</h3>
+  </body>
+
+</html>

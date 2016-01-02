@@ -1,0 +1,16 @@
+#!/bin/bash
+
+
+STR="replenishment_files"
+
+
+
+perl -I ./ scan_replenishment.pl $STR/2015-11-28-07-01-00-Summary.xlsx
+perl -I ./ scan_replenishment.pl $STR/2015-11-29-07-00-08-Summary.xlsx
+perl -I ./ scan_replenishment.pl $STR/2015-11-30-07-16-52-Summary.xlsx 
+perl -I ./ scan_replenishment.pl $STR/2015-12-01-07-01-47-Summary.xlsx 
+perl -I ./ scan_replenishment.pl $STR/2015-12-02-07-02-05-Summary.xlsx
+perl -I ./ scan_replenishment.pl $STR/2015-12-03-07-01-22-Summary.xlsx  
+perl -I ./ scan_replenishment.pl $STR/2015-12-04-07-00-54-Summary.xlsx
+perl -I ./ scan_replenishment.pl $STR/2015-12-05-07-01-25-Summary.xlsx
+perl -I ./ scan_replenishment.pl $STR/2015-12-06-07-02-03-Summary.xlsx

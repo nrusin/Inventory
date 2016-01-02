@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>Edit Stockroom</title>
+    <meta charset="utf-8">
+
+  </head>
+  <body>
+    <h1>Edit Stockroom</h1>
+    <h2>Basic Path</h2>
+    <ol>
+      <li><p>The Inventory Manager selects view stockroom.</p></li>
+      <li><p>The use case begins when the Inventory Manager selects
+	  one of the stockrooms.</p></li>
+      <li><p>The software retrieves information about the stockroom.</p></li>
+      <li><p>The software shows the information to the Inventory Manager.</p></li>
+      <li><p>The software allows the Inventory
+
+    <h2>Alternate Paths</h2>
+    <h3>DB Error</h3>
+  </body>
+
+</html>

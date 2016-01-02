@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>Push Replenishment</title>
+    <meta charset="utf-8">
+
+  </head>
+  <body>
+    <h1>Push Replenishment</h1>
+    <h2>Basic Path</h2>
+    <ol>
+      <li><p>The use case begins when the Inventory Manager selects
+	  "View Replenishments".</p></li>
+      <li><p>The Inventory Manager selects "Add Replenishement".</p></li>
+      <li><p>The software prompts the Inventory Manager for the
+	  replenishment's filename.</p></li>
+      <li><p>The Inventory Manager enters the
+	  replenishment's filename.</p></li>
+      <li><p>The software reads the replenishment.</p></li>
+      <li><p>The software checks that the replenishment is consecutive
+	  with prior replenishments.</p></li>
+      <li><p>For each product within the replenishment</p></li>
+      <ol>
+	<li><p>The software checks that the product's upc is valid.</p></li>
+	<li><p>The software looks up the product by upc. If the
+	    product within the replenishment is not
+	    found the software creates a new product with
+	    upc. </p></li>
+	<li><p>The software enters the product and the quantity sold
+	    into the replenishment.</p></li>
+      </ol>
+      <li><p>The software shows the Inventory Manager the list of
+	     products that were added.</p></li>
+    </ol>
+      
+
+    <h2>Alternate Paths</h2>
+    <h3>DB Error</h3>
+  </body>
+
+</html>

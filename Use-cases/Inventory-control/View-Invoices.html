@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>View Invoices</title>
+    <meta charset="utf-8">
+
+  </head>
+  <body>
+    <h1>View Invoices</h1>
+    <h2>Basic Path</h2>
+    <ol>
+      <li><p>The use case begins when the Inventory Manager selects "View Invoices".</p></li>
+      <li><p>The software retrieves last ten invoices ordered by dates the invoice's were received.</p></li>
+      <li><p>While the Inventory Manager has not selected an invoice
+	  <ol>
+	    <li><p>The softare shows the invoices, the date they were received, and
+		the PO to the Inventory Manager.</p></li>
+            <li><p>At this point the Inventory may select a beginning date. </p></li>
+	    <li><p>The software prompts the Inventory Manager whether he or she wants
+		to move the window of ten invoices back or forward. </p></li>
+
+	    <li><p>Depending on the current position of the invoice window, the software retrieves
+		   ten invoices backward or forward.</p></li>
+	  </ol>
+      </li>
+      <li><p>The Inventory Manager selects an invoice.</li>
+      <li><p>The software retrieves the invoice's vendor.</li>
+      <li><p>The software retrieves the invoice's invoice number.</li>
+      <li><p>The software retreives the invoice's PO.</li>
+      <li><p>The software retrieves the invoice's shipment method.</li>
+      <li><p>The software retrieves the date the invoice was received.</li>
+      <li><p>The software retrieves the date the invoice was shipped.</li>
+      <li><p>For each product shipped on the invoice</p>
+	<ol>
+	  <li><p>The software retrieves the product's SKUs, description's, UPC, and cost</p></li>
+	  <li><p>The software retrieves the number of the products shipped and the unit type
+	         to show them.</p></li>
+	</ol>
+      <li><p>The software retrieves the product's ordered on the invoice.</li>
+      <li><p>The software allows the Inventory Manager to view the PO.</li>
+      <li><p>The software allows the Inventory Manager to select one of the products
+	     to show more detailed information.</p></li>
+
+    <h2>Alternate Paths</h2>
+    <h3>DB Error</h3>
+  </body>
+
+</html>

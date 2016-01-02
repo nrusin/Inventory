@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>Startup</title>
+    <meta charset="utf-8">
+
+  </head>
+  <body>
+    <h1>Startup</h1>
+    <h2>Basic Path</h2>
+    <ol>
+      <li><p>The use case begins when the Inventory Manager starts the
+	  application.</p></li>
+      <li><p>The software checks that a default database type has
+	  been set.</p></li>
+      <li><p>The software checks that the dbname and hostname
+	  have been set if it's a MySQL database. Otherwise, if
+	  it's a Sqlite database, the software checks that the folder name
+	  and dbname have been set.</p></li>
+      <li><p>Assuming the previous have not been set, the software prompts
+	  for the whether to use a MySQL database or a
+	  SQLite database.</p></li>
+      <li><p>The software prompts for the database name and folder if
+	  a Sqlite database, otherwise the software prompts for the
+	  database name, host, user name, and password. </p></li>
+      <li><p>If the database is a MySQL database, the software
+	     prompts the Inventory Manager to login. Include <a href="Login.html">Login</a> </p>
+      <li><p>The software connects to the database.</p></li>
+      <li><p>The software checks whether the database schema
+	  has been built.</p></li>
+      <li><p>The software builds the database schema.</p></li>
+	  
+
+    <h2>Alternate Paths</h2>
+    <h3>DB Error</h3>
+  </body>
+
+</html>
