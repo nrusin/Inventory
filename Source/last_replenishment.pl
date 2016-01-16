@@ -49,7 +49,7 @@ sub is_upstairs {
 
 
 
-    return $depno == 7 || $depno == 8 || $depno == 12 || $depno == 13 || $depno == 17;
+    return $depno == 7 || $depno == 8 || $depno == 12 || $depno == 17;
 }
 
 
@@ -87,8 +87,6 @@ if ($department =~ m/newspaper/i) {
     $department = 8;
 } elsif ($department =~ m/travel/i) {
     $department = 12;
-} elsif ($department =~ m/toys/i) {
-    $department = 13;
 } elsif ($department =~ m/electronics/i) {
     $department = 15;
 } elsif ($department =~ m/stationary/i) {
@@ -167,8 +165,7 @@ while(my $product = $piter->fetch_product) {
     }
 
     my $qty_sold = $product->get_qty_sold_since($datetime);
-    print "qty_sold = $qty_sold\n";
-    
+
     #if (!defined($qty_sold)) {
 
 #	print "qty sold not defined\n";

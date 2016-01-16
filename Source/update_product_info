@@ -7,8 +7,10 @@ use DB::SchemaBuilder;
 use DB::Products;
 use DB::Product;
 
-
 package ProductInfoUpdater;
+
+
+my $product_list_filename = "../Data/PRODUCT_LIST.xlsx";
 
 
 
@@ -55,8 +57,9 @@ sub update_product_info {
     $dbh->{AutoCommit} = $save_old;
 }
 
-my $dbh = DBI->connect("dbi:SQLite:dbname=p.db", "","",
-                       { RaiseError => 1});
+my $dbh = DB::SchemaBuilder->connect_to_sqlite(
+    "/home/nrusin/inventory/Data/p.db");
+
 
 
 my $sb = DB::SchemaBuilder->new($dbh);
@@ -66,7 +69,7 @@ $sb->build();
 
 my $updater = ProductInfoUpdater->new($dbh);
 
-$updater->update_product_info("PRODUCT_LIST.xlsx");
+$updater->update_product_info($product_list_filename);
 
 
 1

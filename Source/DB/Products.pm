@@ -54,10 +54,6 @@ sub insert {
 
 #    $product->set_product_info($product_info);
 
-    my $d = Data::Dumper->new([$dbh, $product_info], ["dbh", "product_info"]);
-
-
-    print $d->Dump;
 
 
     $sku = DB::Product->make_product_with_info($dbh, $product_info);
@@ -66,6 +62,9 @@ sub insert {
 
     return $product;
 }
+
+
+
 sub update_products_info {
     my $self = shift;
     my $product_info = shift;

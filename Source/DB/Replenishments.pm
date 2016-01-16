@@ -8,9 +8,9 @@ use DBI;
 use DateTime::Format::DBI;
 use DB::ReplenishmentsIterator;
 use DB::Products;
+use DB::Stockrooms;
 use Core::ProductInfo;
 use Data::Dumper;
-
 
 package DB::Replenishments;
 
@@ -82,7 +82,7 @@ sub lookup_qty_sold_by_upc {
     my $dbh = $self->{dbh};
 
 
-    my $products = Products->new($dbh);
+    my $products = DB::Products->new($dbh);
 
     my $product = $products->lookup_by_upc($upc);
 
@@ -168,19 +168,25 @@ sub begin_replenishment {
     my $self = shift;
     my $beginning_datetime = shift;
     my $ending_datetime = shift;
-
+    my $stockroom = shift;
+    
     my  $dbh = $self->{dbh};
     my $sth;
 
     my $db_parser = DateTime::Format::DBI->new($dbh);
+
+    my $stockrooms = DB::Stockrooms->new($dbh);
+    my $stockroom_id = $stockrooms->get_stockroom_id($stockroom->get_name());
 
     if (DateTime->compare($beginning_datetime, $ending_datetime) == 1) {
 	die "Ending datetime must be after beginning datetime.";
     }
     
     $sth = $dbh->prepare("SELECT max(end_datetime)
-                          FROM Replenishments");
+                          FROM Replenishments
+                          WHERE stockroom_id = ?");
 
+    $sth->bind_param(1, $stockroom_id);
 
     if (!$sth->execute()) {
 	die "begin_replenishment failed at execute!\n";
@@ -198,7 +204,9 @@ sub begin_replenishment {
 	
 	if ($beginning_datetime->delta_md($end_dt_max)->delta_days != 1) {
 
-	    die "$beginning_datetime $end_dt_max -- A new replenishment must be consecutive with prior replenishments\n";
+	    die "$beginning_datetime $end_dt_max -- A new replenishment\n".
+                 "must be consecutive with prior replenishments\n" .
+                 "last replenishment was $end_dt_max\n";
 	}
 
     }
@@ -210,14 +218,16 @@ sub begin_replenishment {
 
 
 
-    $sth = $dbh->prepare("INSERT INTO Replenishments(id, begin_datetime, end_datetime)
-                             VALUES(NULL, ?, ?)");
+    $sth = $dbh->prepare("INSERT INTO Replenishments(id, begin_datetime, end_datetime,
+                                      stockroom_id)
+                             VALUES(NULL, ?, ?, ?)");
 
 
 
     $sth->bind_param(1, $beginning_datetime_str);
     $sth->bind_param(2, $ending_datetime_str);
-
+    $sth->bind_param(3, $stockroom_id);
+    
     if (!$sth->execute()) {
 	die "begin_replenishment failed at execute!\n";
 
@@ -244,11 +254,7 @@ sub insert_into {
 
     my $dbh = $self->{dbh};
     
-    my $upc_str = undef;
-
-
-    $upc_str = $replenishment_entry->get_upc()->str() if $replenishment->entry->get_upc();
-    
+    my $upc_str = $replenishment_entry->get_upc()->str();
 
     my $description = $replenishment_entry->get_description();
     my $price = $replenishment_entry->get_price();
@@ -300,12 +306,8 @@ sub insert_into {
 	$product_info->set_department_no($depno);
 
 	
-	my $d = Data::Dumper->new([$dbh, $product_info], ["dbh", "product_info"]);
-
-
-	print $d->Dump;
-
 	my $product = $products->insert($product_info);
+
 	warn("Entering $description $upc_str $price $qty_sold into Product's database");
 
 
@@ -316,6 +318,13 @@ sub insert_into {
 
     if (defined($sku)) {
 
+	my $product = DB::Product->new($dbh, $sku);
+
+
+	# Update price from replenishment
+	
+	$product->set_price($price);
+	    
 	$sth = $dbh->prepare("INSERT INTO
                              Replenishments_detail(id, SKU, qty_sold, master_replenishment_id)
                              VALUES(NULL, ?, ?, ?)");

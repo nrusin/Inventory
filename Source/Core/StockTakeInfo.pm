@@ -34,6 +34,11 @@ sub set_upc {
     my $self = shift;
     my $upc = shift;
 
+    if (ref($upc) ne "Core::Upc") {
+	Carp::confess("upc must be Core::Upc object");
+
+    }
+    
     $self->{upc} = $upc;
 
 }

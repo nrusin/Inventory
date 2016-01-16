@@ -1,5 +1,11 @@
 #!/usr/bin/perl
 
+# Product.pm
+#
+# Author: Nicholas Rusinko
+# Email:  nicholas.rusinko@gmail.com
+#
+#
 
 
 use warnings;
@@ -10,7 +16,8 @@ use Core::ProductInfo;
 use Core::Upc;
 use Data::Dumper;
 use DB::StockTakes;
-
+use DB::Stockroom;
+use DB::Stockrooms;
 
 package DB::Product;
 
@@ -22,10 +29,6 @@ sub make_product_with_info {
     my $class = shift;
     my $dbh = shift;
     my $product_info = shift;
-
-    my $d =  Data::Dumper->new([$class, $dbh, $product_info], ["class", "dbh", "product_info"]);
-
-    print $d->Dump;
 
     if (!defined($product_info)) {
 	die "Product info not defined!\n";
@@ -59,19 +62,19 @@ sub make_product_with_info {
     }
 
 
-    $sth->bind_param(2, $product_info->get_description(), DBI::SQL_VARCHAR);
-    $sth->bind_param(3, $product_info->get_unit(), DBI::SQL_INTEGER);
-    $sth->bind_param(4, $product_info->get_case_pack(), DBI::SQL_INTEGER);
-    $sth->bind_param(5, $product_info->get_department_no(), DBI::SQL_INTEGER);
-    $sth->bind_param(6, $product_info->get_cost(), DBI::SQL_DECIMAL);
-    $sth->bind_param(7, $product_info->get_unit_cost(), DBI::SQL_DECIMAL);
-    $sth->bind_param(8, $product_info->get_par(), DBI::SQL_INTEGER);
-    $sth->bind_param(9, $product_info->get_item_no(), DBI::SQL_INTEGER);
-    $sth->bind_param(10, $product_info->get_category_id(), DBI::SQL_INTEGER);
-    $sth->bind_param(11, $product_info->get_location(), DBI::SQL_INTEGER);
-    $sth->bind_param(12, $product_info->get_units_in_bx(), DBI::SQL_INTEGER);
-    $sth->bind_param(13, $product_info->get_price(), DBI::SQL_DECIMAL);
-    $sth->bind_param(14, $product_info->get_eoq(), DBI::SQL_INTEGER);
+    $sth->bind_param(2, $product_info->get_description());
+    $sth->bind_param(3, $product_info->get_unit());
+    $sth->bind_param(4, $product_info->get_case_pack());
+    $sth->bind_param(5, $product_info->get_department_no());
+    $sth->bind_param(6, $product_info->get_cost());
+    $sth->bind_param(7, $product_info->get_unit_cost());
+    $sth->bind_param(8, $product_info->get_par());
+    $sth->bind_param(9, $product_info->get_item_no());
+    $sth->bind_param(10, $product_info->get_category_id());
+    $sth->bind_param(11, $product_info->get_location());
+    $sth->bind_param(12, $product_info->get_units_in_bx());
+    $sth->bind_param(13, $product_info->get_price());
+    $sth->bind_param(14, $product_info->get_eoq());
 
 
 
@@ -271,6 +274,265 @@ sub get_stock_take {
     return @result;
 }
 
+
+# Product::get_qty_transfered_to_since
+#
+# Retrieve the quantity transfered after a particular datetime
+#
+# stockroom: stockroom where transfers are going to
+# datetime: datetime afterwhich transfers are summed
+#
+sub get_qty_transfered_to_since {
+    my $self = shift;
+    my $stockroom = shift;
+    my $datetime = shift;
+    my $dbh = $self->{dbh};
+    my $sku = $self->{sku};
+
+    my $stockrooms = DB::Stockrooms->new($dbh);
+    my $stockroom_id = $stockrooms->get_stockroom_id($stockroom->get_name());
+
+    my $datetime_str = $self->impl_format_datetime($datetime);
+    
+    my $sth = $dbh->prepare("SELECT SUM(qty_transfered)
+                             FROM Transfers t, Transfers_detail td
+                             WHERE td.master_transfer_id = t.id AND
+                                to_stockroom = ? AND
+                                td.SKU = ? AND
+                                from_stockroom <> to_stockroom AND
+                                t.datetime >= ?");
+
+    $sth->bind_param(1, $stockroom_id);
+    $sth->bind_param(2, $sku);
+    $sth->bind_param(3, $datetime_str);
+
+
+    if (!$sth->execute()) {
+	die "get_qty_transfered_to_since failed at execute!";
+    }
+
+
+    my $qty_transfered;
+    ($qty_transfered) = $sth->fetchrow_array();
+
+    $qty_transfered = 0 if !defined($qty_transfered);
+    
+    return $qty_transfered;
+
+}
+
+
+# Product::get_qty_transfered_to
+#
+# Retrieve the quantity transfered to a particular stockroom,
+#          not counting any transfers to the same stockroom
+#
+# stockroom: stockroom where transfers are going to
+#
+sub get_qty_transfered_to {
+    my $self = shift;
+    my $stockroom = shift;
+
+    my $dbh = $self->{dbh};
+    my $sku = $self->{sku};
+
+    my $stockroom_id = $self->get_stockroom_id($stockroom);
+
+    my $sth = $dbh->prepare("SELECT SUM(qty_transfered)
+                             FROM Transfers t, Transfers_detail td
+                             WHERE td.master_transfer_id = t.id AND
+                                   to_stockroom = ? AND
+                                   td.SKU = ? AND
+                                   from_stockroom <> to_stockroom");
+
+    $sth->bind_param(1, $stockroom_id);
+    $sth->bind_param(2, $sku);
+
+
+    if (!$sth->execute()) {
+	die "get_qty_transfered_to failed at execute";
+
+    }
+
+    my $qty_transfered;
+
+    ($qty_transfered) = $sth->fetchrow_array();
+
+    $qty_transfered = 0 if !defined($qty_transfered);
+
+
+    return $qty_transfered;
+    
+}
+
+# Product::get_transfered_from_since
+#
+# Retrieve the quantity transfered from a particular stockrooom
+# after a specific date, not counting any transfers to the same
+# stockroom
+#
+# stockroom: stockroom where the transfers come from
+# datetime:  transfers after this date
+sub get_qty_transfered_from_since {
+    my $self = shift;
+
+    my $stockroom = shift;
+    my $datetime = shift;
+    
+    my $dbh = $self->{dbh};
+    my $sku = $self->{sku};
+
+    my $stockroom_id = $self->get_stockroom_id($stockroom);
+
+    my $datetime_str = $self->impl_format_datetime($datetime);
+    
+    my $sth = $dbh->prepare("SELECT SUM(qty_transfered)
+                             FROM Transfers t, Transfers_detail td
+                             WHERE td.master_transfer_id = t.id AND
+                             from_stockroom = ? AND
+                             td.SKU = ? AND
+                             from_stockroom != to_stockroom AND
+                             t.datetime >= ?");
+
+    $sth->bind_param(1, $stockroom_id);
+    $sth->bind_param(2, $sku);
+    $sth->bind_param(3, $datetime_str);
+
+
+    if (!$sth->execute()) {
+	die "get_qty_transfered_from_since failed at execute!";
+    }
+
+    my $qty_transfered;
+
+    ($qty_transfered) = $sth->fetchrow_array();
+
+    $qty_transfered = 0 if !defined($qty_transfered);
+
+    print "get_qty_transfered_from_since: qty_transfered=$qty_transfered\n";
+    
+
+    return $qty_transfered;
+}    
+
+# Product::get_qty_transfered_from  
+#
+# Retrieve the quantity transfered from a particular stockroom,
+# not counting any transfers to the same stockroom
+#
+# stockroom: stockroom where the transfers from
+sub get_qty_transfered_from {
+    my $self = shift;
+    my $stockroom = shift;
+
+
+    my $dbh = $self->{dbh};
+    my $sku = $self->{sku};
+
+    my $stockroom_id = $self->get_stockroom_id($stockroom);
+    
+    my $sth = $dbh->prepare("SELECT SUM(qty_transfered)
+                             FROM Transfers t, Transfers_detail td
+                             WHERE td.master_transfer_id = t.id AND
+                             from_stockroom = ? AND
+                             td.SKU = ? AND 
+                             from_stockroom <> to_stockroom");
+
+    $sth->bind_param(1, $stockroom_id);
+    $sth->bind_param(2, $sku);
+
+
+    if (!$sth->execute()) {
+	die "get_qty_transfered_from failed at execute";
+    }
+
+    my $qty_transfered;
+
+    ($qty_transfered) = $sth->fetchrow_array();
+
+    $qty_transfered = 0 if !defined($qty_transfered);
+
+
+    return $qty_transfered;
+}
+
+
+# impl_format_datetime
+#
+# Private method to convert a DateTime object into a string that
+# DBI can use in the database
+#
+# datetime: DateTime object to convert into a database string
+#
+# Returns converted DateTime object's string
+sub impl_format_datetime {
+    my $self = shift;
+    my $datetime = shift;
+    
+    my $dbh = $self->{dbh};
+
+
+    if (!defined($dbh)) {
+	Carp::confess("dbh is not a database handle");
+
+    }
+    
+    my $db_parser = DateTime::Format::DBI->new($dbh);
+
+    return $db_parser->format_datetime($datetime);
+
+}
+
+# Retrieve the quantity transfered from a particular stockroom,
+# after a particular date
+#
+# stockroom: 
+
+
+sub get_qty_received_by_stockroom_since {
+    my $self = shift;
+    my $stockroom = shift;    
+    my $datetime = shift;
+
+    
+
+    my $dbh = $self->{dbh};
+    my $sku = $self->{sku};
+
+
+    my $datetime_str = $self->impl_format_datetime($datetime);
+
+
+    my $stockroom_id = $self->get_stockroom_id($stockroom);
+    
+
+    my $sth = $dbh->prepare("SELECT SUM(qty_received)
+                             FROM Invoices inv, Invoices_detail invd
+                             WHERE inv.invoice_id = invd.master_invoice_id AND
+                                   invd.SKU = ? AND
+                                   inv.datetime_received > ? AND
+                                   inv.stockroom_id = ?");
+
+    $sth->bind_param(1, $sku);
+    $sth->bind_param(2, $datetime_str);
+    $sth->bind_param(3, $stockroom_id);
+    
+    if (!$sth->execute()) {
+	die "Product::get_qty_received_by_stockroom_since failed at execute!\n";
+    }
+	
+
+    my ($qty_received) = $sth->fetchrow_array();
+
+
+    $qty_received = 0 if !defined($qty_received);
+
+    
+    return $qty_received;
+}
+
+
+
 sub get_qty_received_since {
     my $self = shift;
     my $datetime = shift;
@@ -279,8 +541,7 @@ sub get_qty_received_since {
     my $dbh = $self->{dbh};
     my $sku = $self->{sku};
 
-    my $db_parser = DateTime::Format::DBI->new($dbh);
-    my $datetime_str = $db_parser->format_datetime($datetime);
+    my $datetime_str = $self->impl_format_datetime($datetime);
 
     
     my $sth = $dbh->prepare("SELECT SUM(qty_received)
@@ -296,15 +557,52 @@ sub get_qty_received_since {
     
     if (!$sth->execute()) {
 	    
-	    die "Product::get_qty_on_hand failed on execute\n";
+	die "Product::get_qty_on_hand failed on execute\n";
     }
 
     my ($qty_from_invoices) = $sth->fetchrow_array();
     die "fetchrow_array failed: $DBI::errstr!\n" if DBI::errstr;
 
 
+    $qty_from_invoices = 0 if !defined($qty_from_invoices);
+    
+
     return $qty_from_invoices;
 }
+
+sub get_qty_received_by_stockroom {
+    my $self = shift;
+    my $stockroom = shift;
+    
+    my $sku = $self->{sku};
+    my $dbh = $self->{dbh};
+
+
+    my $stockroom_id = $self->get_stockroom_id($stockroom);
+    
+    
+    
+    my $sth = $dbh->prepare("SELECT SUM(invd.qty_received)
+                             FROM Invoices inv, Invoices_detail invd
+                             WHERE inv.invoice_id = invd.master_invoice_id AND
+                                     invd.SKU=? AND
+                                     stockroom_id=?");
+
+    $sth->bind_param(1, $sku);
+    $sth->bind_param(2, $stockroom_id);
+    
+    if (!$sth->execute()) {
+	die "get_qty_received_by_stockroom failed!";
+    }
+
+    my $qty_received;
+
+    ($qty_received) = $sth->fetchrow_array();
+
+
+    $qty_received = 0 if (!defined($qty_received));
+}
+
 
 # Return the average number of units sold daily in selling units
 sub get_avg_sold {
@@ -400,9 +698,13 @@ sub get_qty_sold_since {
     my $sku = $self->{sku};
     my $dbh = $self->{dbh};
 
-    my $db_parser = DateTime::Format::DBI->new($dbh);
 
-    my $datetime_str = $db_parser->format_datetime($datetime);
+    if (ref($datetime) ne "DateTime") {
+
+	Carp::confess("datetime must be a DateTime object!");
+    }
+    
+    my $datetime_str = $self->impl_format_datetime($datetime);
 
     
     my $sth = $dbh->prepare("SELECT SUM(qty_sold)
@@ -413,9 +715,6 @@ sub get_qty_sold_since {
     
     $sth->bind_param(1, $sku);
     $sth->bind_param(2, $datetime_str);
-
-    print "sku = $sku\n";
-    print "end_datetime = $datetime_str\n";
     
     if (!$sth->execute()) {
 	die "Product::get_qty_on_hand failed on execute!\n";
@@ -424,8 +723,9 @@ sub get_qty_sold_since {
     
     my $qty_sold = 0;
 
-    ($qty_sold) = $sth->fetchrow_array();
-
+    while(my ($qfr) = $sth->fetchrow_array()) {
+	$qty_sold = $qfr if defined($qfr);
+    }
 
     if ($DBI::err) {
 
@@ -437,77 +737,324 @@ sub get_qty_sold_since {
 }
 
 
-
-# Product
-sub get_qty_on_hand {
+sub get_qty_on_hand_at_stockroom {
     my $self = shift;
+    my $stockroom = shift;
 
+    
     my $dbh = $self->{dbh};
     my $sku = $self->{sku};
-    my $sth;
+    my $qty_at_st = 0;           # Quantity at stock take
     
-    my $qty_at_st = 0;
-    my $qty_at_hand;
+    my $sth;
 
-    my $qty_from_invoices = 0;
-    my $qty_from_replenishment = 0;
-
+    if (ref($stockroom) ne "DB::Stockroom") {
+	die "Stockroom must be a DB::Stockroom";
+    }
+    
     my $stock_takes = DB::StockTakes->new($dbh);
 
+    
+    my %stock_take = $self->get_last_stock_take_at_stockroom($stockroom);
+    
 
+    my $qty_sold;
+    my $qty_received;
+    my $transfers_from;
+    my $transfers_to;
 
-    my %stock_take = $stock_takes->get_last_stock_take_by_sku($sku);
-
-    if (defined($stock_take{qty_counted})) {
+    if (%stock_take) {
 	$qty_at_st = $stock_take{qty_counted};
 	my $datetime_of_st = $stock_take{datetime};
 
 
+	$qty_sold  = $self->get_qty_sold_by_stockroom_since($stockroom,
+							    $datetime_of_st);
 
-	$qty_from_replenishment = $self->get_qty_sold_since($datetime_of_st);
-	$qty_from_invoices = $self->get_qty_received_since($datetime_of_st);
-	
+
+	$qty_received = $self->get_qty_received_by_stockroom_since($stockroom,
+								   $datetime_of_st);
+
+
+	$transfers_from
+	    = $self->get_qty_transfered_from_since($stockroom, $datetime_of_st);
+
+	$transfers_to
+	    = $self->get_qty_transfered_to_since($stockroom, $datetime_of_st);
 	
     } else {
+	$qty_sold = $self->get_qty_sold_by_stockroom($stockroom);
+
+	$qty_received = $self->get_qty_received_by_stockroom($stockroom);
+
+	$transfers_from =
+	    $self->get_qty_transfered_from($stockroom);
+
+	$transfers_to =
+	    $self->get_qty_transfered_to($stockroom);
+	    
+    }
+    
+    
+    return $qty_at_st - $qty_sold + $qty_received - $transfers_from
+	+ $transfers_to;
+}
+
+# Retrieve the sum of all quantities sold at a particular stockroom
+# since a particular datetime
+#
+# stockrooom_id: ID of the stockroom
+# datetime:      datetime that sales are retrieved after
+#
+sub get_qty_sold_by_stockroom_since {
+    my $self = shift;
+    my $stockroom = shift;
+    my $datetime = shift;
+
+    my $sku = $self->{sku};
+    my $dbh = $self->{dbh};
+
+    my $datetime_str = $self->impl_format_datetime($datetime);
 	
-	$sth = $dbh->prepare("SELECT SUM(qty_received) 
-                          FROM Invoices inv, Invoices_detail invd
-                          WHERE invd.master_invoice_id = inv.invoice_id AND
-                                invd.SKU = ?");
+    my $stockroom_id = $self->get_stockroom_id($stockroom);
+    
+    
+    my $sth = $dbh->prepare("SELECT SUM(qty_sold)
+                                FROM Replenishments r, Replenishments_detail rd
+                                WHERE r.id = rd.master_replenishment_id AND
+                                rd.SKU = ? AND r.stockroom_id = ? AND 
+                                r.end_datetime >= ?
+                            ");
 
-	$sth->bind_param(1, $sku);
+    $sth->bind_param(1, $sku);
+    $sth->bind_param(2, $stockroom_id);
+    $sth->bind_param(3, $datetime_str);
+    
+    if (!$sth->execute()) {
+
+	die "get_qty_sold_by_stockroom_since failed!";
+
+    }
 
 
-	if (!$sth->execute()) {
-	    die "Product::get_qty_on_hand failed on execute!\n";
+    my ($qty_sold) = $sth->fetchrow_array();
 
-	}
 
-	($qty_from_invoices) = $sth->fetchrow_array();
+    $qty_sold = 0 if !defined($qty_sold);
 
-	$sth = $dbh->prepare("SELECT SUM(qty_sold)
+    
+                                                            
+    return $qty_sold;
+}
+
+
+
+#
+# stockroom_id: ID of the stockroom
+# datetime:     datetime which sales are retrieved after
+
+# Retrieve the sum of all quantities sold at a particular stockroom
+#
+# stockroom_id: ID of the stockroom
+#  
+sub get_qty_sold_by_stockroom {
+    my $self = shift;
+    my $stockroom = shift;
+
+    my $dbh = $self->{dbh};
+
+    my $sku = $self->{sku};
+
+
+
+    if (ref($stockroom) ne "DB::Stockroom") {
+	die "stockroom is not DB::Stockroom but " . ref($stockroom);
+
+    }
+    
+    my $stockroom_id = $self->get_stockroom_id($stockroom);
+    
+    
+    my $sth = $dbh->prepare("SELECT SUM(qty_sold)
+                                FROM Replenishments r, Replenishments_detail rd
+                                WHERE r.id = rd.master_replenishment_id AND
+                                rd.SKU = ? AND
+                                r.stockroom_id = ?");
+
+
+    $sth->bind_param(1, $sku);
+    $sth->bind_param(2, $stockroom_id);
+
+
+    if(!$sth->execute()) {
+        die "get_qty_sold_by_stockroom failed at execute";
+
+
+    }
+
+    my ($qty_sold) = $sth->fetchrow_array();
+
+    $qty_sold = 0 if !defined($qty_sold);
+
+    return $qty_sold;
+}
+
+
+# Retrieve the sum of all quantities sold irrespective of
+# stock takes
+sub get_qty_sold {
+    my $self = shift;
+    
+    my $dbh = $self->{dbh};
+    my $sku = $self->{sku};
+
+
+
+    my $test_str = "SELECT SUM(qty_sold)
+                              FROM Replenishments r, Replenishments_detail rd
+                              WHERE r.id = rd.master_replenishment_id AND
+                                rd.SKU = $sku";
+				
+    my $sth = $dbh->prepare("SELECT SUM(qty_sold)
                               FROM Replenishments r, Replenishments_detail rd
                               WHERE r.id = rd.master_replenishment_id AND
                                 rd.SKU = ?");
 
 
-	$sth->bind_param(1, $sku);
-
-	if (!$sth->execute()) {
-	    die "Product::get_qty_on_hand failed on execute!\n";
-
-	}
-
-	($qty_from_replenishment) = $sth->fetchrow_array();
+    $sth->bind_param(1, $sku);
+    
+    if (!$sth->execute()) {
+	die "Product::get_qty_on_hand failed on execute!\n";
+	
     }
 
-    $qty_from_invoices = 0 unless defined($qty_from_invoices);
-    $qty_from_replenishment = 0 unless defined($qty_from_replenishment);
 
-    $qty_at_hand = $qty_at_st + $qty_from_invoices - $qty_from_replenishment;
+    my $qty_sold;
     
-    return $qty_at_hand;
+    ($qty_sold) = $sth->fetchrow_array();
 
+
+    $qty_sold = 0 if !defined($qty_sold);
+    
+    return $qty_sold;
+}
+
+
+# Retrieve the sum of all quantities received irrespective of
+# stock takes
+sub get_qty_received {
+    my $self = shift;
+    my $sku = $self->{sku};
+    
+    my $dbh = $self->{dbh};
+    my $sth;
+    
+    $sth = $dbh->prepare("SELECT SUM(qty_received) 
+                          FROM Invoices inv, Invoices_detail invd
+                          WHERE invd.master_invoice_id = inv.invoice_id AND
+                                invd.SKU = ?");
+    
+    $sth->bind_param(1, $sku);
+    
+    
+    if (!$sth->execute()) {
+	die "Product::get_qty_on_hand failed on execute!\n";
+	    
+    }
+
+    my $qty_from_invoices;
+    
+    ($qty_from_invoices) = $sth->fetchrow_array();
+
+    $qty_from_invoices = 0 if !defined($qty_from_invoices);
+    
+
+    return $qty_from_invoices;
+}
+
+# Product::get_last_stocktake
+#
+# Retrieves the Product's most recent stock take
+# Stock takes are a hash containing keys datetime, when the stock take
+# was made, and qty_counted, which is the number in pieces that
+# was counted.
+#
+# Returns {datetime, qty_counted} hash
+sub get_last_stocktake {
+    my $self = shift;
+    
+    my $dbh = $self->{dbh};
+    my $sku = $self->{sku};
+
+
+    my $stock_takes = DB::StockTakes->new($dbh);
+
+    return $stock_takes->get_last_stock_take_by_sku($sku);
+
+}
+
+# Product::get_last_stock_take_at_stockroom
+#
+# Retrieves the Product's most recent stock take
+# at a particular stockroom.
+#
+# Stock takes are a hash containing keys datetime, when the stock take
+# was made, and qty_counted, which is the number in pieces that
+# was counted
+#
+# stockroom_id: Particular stockroom to find its stock take.
+#
+# Returns {datetime, qty_counted} hash
+sub get_last_stock_take_at_stockroom {
+    my $self = shift;
+    my $dbh = $self->{dbh};
+    my $sku = $self->{sku};
+    my $stockroom = shift;
+
+    if (!defined($stockroom)) {
+	Carp::confess("stockroom must be defined!");
+	
+    }
+
+    if (ref($stockroom) ne "DB::Stockroom") {
+	Carp::confess("stockroom must be a DB::Stockroom object!");
+    }
+    
+    
+    my $stock_takes = DB::StockTakes->new($dbh);
+
+
+    my %stock_take = $stock_takes->get_last_stock_take_by_sku_at_stockroom($sku, 
+									   $self->get_stockroom_id($stockroom));
+
+
+    return %stock_take;
+}
+
+
+
+# Product
+sub get_qty_on_hand {
+    my $self = shift;
+    my $dbh = $self->{dbh};
+
+
+    my $sth = $dbh->prepare("SELECT name
+                             FROM Stockrooms");
+
+    if (!$sth->execute()) {
+	die "get_qty_on_hand failed at execute!\n";
+    }
+
+    my $qty = 0;
+    
+    while(my ($stockroom_name) = $sth->fetchrow_array()) {
+	
+	$qty += $self->get_qty_on_hand_at_stockroom(DB::Stockroom->new($stockroom_name));
+    }
+    
+                                   
+    return $qty;
 }
 
     
@@ -1414,6 +1961,23 @@ sub set_upc {
     }
 
 }
+
+
+# Product 
+# Set Vendor
+sub set_vendor {
+
+
+}
+
+# Product
+# Get Vendor
+sub get_vendor {
+
+
+}
+
+# 
 
 # Product
 sub get_retail {

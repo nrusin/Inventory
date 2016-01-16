@@ -318,7 +318,7 @@ sub get_upc {
 
 # ProductInfo::set_upc
 #
-#
+# upc: Core::Upc reference
 
 sub set_upc {
     my $self = shift;

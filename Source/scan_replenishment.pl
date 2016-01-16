@@ -6,46 +6,18 @@ use strict;
 use Parser::ReplenishmentParser;
 use DB::Replenishments;
 use DB::SchemaBuilder;
+use DB::Stockroom;
 
-my $config_fn = "../config/config.cfg";
-    
 my $rp = Parser::ReplenishmentParser->new();
 
 my $rfilename = $ARGV[0];
-
+my $db_filename = "/home/nrusin/inventory/Data/p.db";
 
 if (!defined($rfilename)) {
     print $0 . " <replenishment filename>\n";
     exit 0;
 }
 
-
-
-open(my $fh, '<', $config_fn) or die "Could not open config file!";
-
-
-
-my $data_directory;
-my $dbname;
-
-while(my $line = <$fh>) {
-    chomp $line;
-    
-    print "line = $line\n";
-    
-    if ($line =~ /Data Directory:\s*\"(.+)\"\s*$/) {
-	$data_directory = $1;
-    }
-    
-    if ($line =~ /DB Name:\s*\"(.+)\"\s*$/) {
-       $dbname = $1;
-   }
-}
-
-if (!defined($data_directory) || !defined($dbname)) {
-    print "$data_directory  $dbname\n";
-    die "Config file in wrong format!";
-}
 
 $rp->open($rfilename);
 
@@ -58,29 +30,31 @@ print "ending_date = $ending_date\n";
 
 
 
-my $dbh = DBI->connect("dbi:SQLite:dbname=$data_directory/$dbname", "", "",
-		       { RaiseError => 1});
+my $dbh = DB::SchemaBuilder->connect_to_sqlite($db_filename);
 
-$dbh->{AutoCommit} = 0;
 
 
 my $sb = DB::SchemaBuilder->new($dbh);
 
+$sb->build();
 
 my $replenishments = DB::Replenishments->new($dbh);
 
 
 my $rid = $replenishments->begin_replenishment($beginning_date,
-					       $ending_date);
+					       $ending_date, DB::Stockroom->new("Airport"));
 
 while(!$rp->eof()) {
     my $re = $rp->get_replenishment_entry();
 
+    $_ = $re->get_description();
+
     if (defined($re->get_upc())) {
 	$replenishments->insert_into($rid, $re);
     } else {
-	warn("$re->get_description() does not have UPC: Cannot insert!");
+	warn "upc not defined for " . $re->get_description() . "\n";
     }
+
 
     $rp->next();
 }

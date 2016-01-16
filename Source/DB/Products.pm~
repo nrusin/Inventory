@@ -66,6 +66,9 @@ sub insert {
 
     return $product;
 }
+
+
+
 sub update_products_info {
     my $self = shift;
     my $product_info = shift;

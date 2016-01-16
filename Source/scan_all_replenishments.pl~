@@ -2,37 +2,34 @@
 use strict;
 use warnings;
 
+print "scan all replenishments\n";
 
-my $directory = "../Data/replenishment_files/";
-my $src_directory = ".";
-my $scanner = "$src_directory/scan_replenishment.pl";
+my $directory = "../Data/replenishment_files";
 
-my $perl_exec = "perl -I $src_directory/ $scanner ";
-
-opendir(DIR, $directory) or die $!;
+opendir(DIR, $directory) or die "Could not open directory: $!";
 
 
 my @files;
 
 while(my $file = readdir(DIR)) {
-    if ($file =~ /.*\.xlsx$/) {
+    print "File = $file\n";
+    
+    if (($file =~ /\.xlsx$/)) {
 	push @files, $file;
     }
+
 
 }
 
 @files = sort {return $a cmp $b}  @files;
 
-my $cnt = 0;
 
 foreach my $file (@files) {
-    my $full_path = "\"" . $directory . $file . "\"";
-    my $cmd = "$perl_exec  $full_path";
-    print $cmd . "\n";
-    system($cmd);
-
-    exit 0;
-
+    my $fullpath = $directory . "/" . $file;
+    print $fullpath . "\n";
+    
+    system("perl -I ./ scan_replenishment.pl $fullpath");
 }
+
 
 

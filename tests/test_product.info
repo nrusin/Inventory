@@ -1,0 +1,117 @@
+E(qty_on_hand): 0
+E(qty_on_hand_at_airport):0
+E(qty_on_hand_at_genco):0
+
+
+begin replenishment
+  stockroom: Airport
+  beginning: 1/3/2016
+    sold: 4
+    sold: 6
+  ending: 1/3/2016
+end replenishment
+
+E(qty_on_hand): -10
+E(qty_on_hand_at_airport):-10
+E(qty_on_hand_at_genco):0
+
+begin replenishment
+  stockroom: Genco
+  beginning: 1/3/2016
+     sold:2
+  ending: 1/3/2016
+end replenishment
+
+E(qty_on_hand):-12
+E(qty_on_hand_at_airport):-10
+E(qty_on_hand_at_genco):-2
+
+begin stocktake
+  stockroom: Airport
+  datetime: 1/2/2016
+  qty_on_hand: 100
+end stocktake
+
+
+E(qty_on_hand):88
+E(qty_on_hand_at_airport):90
+E(qty_on_hand_at_genco):-2
+
+begin stocktake
+  stockroom: Airport
+  datetime: 1/3/2016
+  qty_on_hand:50
+end stocktake
+
+E(qty_on_hand):38
+E(qty_on_hand_at_airport):40
+E(qty_on_hand_at_genco):-2
+
+begin stocktake
+   stockroom: Genco
+   datetime:1/3/2016
+   qty_on_hand:20
+end stocktake
+
+E(qty_on_hand):58
+E(qty_on_hand_at_airport):40
+E(qty_on_hand_at_genco):18
+
+begin stocktake
+    stockroom: Genco
+    datetime: 12/31/2015
+    qty_on_hand:10
+end stocktake
+E(qty_on_hand):58
+E(qty_on_hand_at_airport):40
+E(qty_on_hand_at_genco):18
+
+begin transfer
+   stockroom_from: Airport
+   stockroom_to:Genco
+   qty_transfered:10
+   datetime:1/4/2016
+end transfer
+
+
+E(qty_on_hand):58
+E(qty_on_hand_at_airport):30
+E(qty_on_hand_at_genco):28
+
+
+begin transfer
+     stockroom_from: Genco
+     stockroom_to: Airport
+     qty_transfered:20
+     datetime:1/5/2016
+end transfer
+
+E(qty_on_hand):58
+E(qty_on_hand_at_airport):50
+E(qty_on_hand_at_genco):8
+
+
+begin invoice
+      stockroom: Genco
+      qty_received:100
+      datetime:1/6/2016
+end invoice
+
+E(qty_on_hand):158
+E(qty_on_hand_airport):50
+E(qty_on_hand_genco):108
+
+begin invoice
+      stockroom: Airport
+      qty_received:50
+      qty_received:150
+      datetime:1/6/2016
+end invoice
+
+
+E(qty_on_hand):358
+E(qty_on_hand_at_airport):250
+E(qty_on_hand_at_genco):108
+
+
+

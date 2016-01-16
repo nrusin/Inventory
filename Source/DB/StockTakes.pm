@@ -1,5 +1,8 @@
 #!/usr/bin/perl
-
+#
+# Author: Nicholas Rusinko
+# Email: nicholas.rusinko@gmail.com
+#
 use DBI;
 use warnings;
 use strict;
@@ -7,10 +10,15 @@ use DateTime;
 use DateTime::Format::DBI;
 use Core::StockTakeInfo;
 use DB::Products;
-
+use DB::Stockrooms;
 
 package DB::StockTakes;
 
+
+# new
+# Create a new stock take
+#
+# dbh -- database handle
 sub new {
     my $class = shift;
 
@@ -25,6 +33,13 @@ sub new {
 }
 
 
+# get_last_stock_take_by_upc
+#
+# Retrieve the product with a specific upc's last
+# stock take. The stock take returned
+# is a hash %stock_take{:sku, :qty_counted, :datetime}
+# identifying the the product by sku, the quantity in
+# pieces counted, and the datetime of the stock take
 sub get_last_stock_take_by_upc {
     my $self = shift;
     my $upc = shift;
@@ -40,111 +55,372 @@ sub get_last_stock_take_by_upc {
 
     my $sku = $product->get_sku();
 
-    print "sku = $sku at get_last_stock_take_by_upc\n";
-
     return $self->get_last_stock_take_by_sku($sku);
 }
 
-
-sub get_last_stock_take_by_sku {
+# impl_parse_datetime
+#
+# Convert a datetime stored in a database string to a DateTime object
+#
+# datetime_str: datetime stored as a database string
+#
+sub impl_parse_datetime {
     my $self = shift;
-    my $sku = shift;
+    my $datetime_str = shift;
     
     my $dbh = $self->{dbh};
     my $db_parser = DateTime::Format::DBI->new($dbh);
 
-    my $date_of_st;
+    return $db_parser->parse_datetime($datetime_str);
+}
+
+# impl_find_last_datetime
+#
+# Finds the most recent stock take of a product and return its date.
+# If there is no stock take, then returns undef
+#
+#
+# sku: Product's SKU
+#
+#
+sub impl_find_last_datetime {
+    my $self = shift;
+    my $sku = shift;
+   
+    my $datetime_of_st;
+
+    my $dbh = $self->{dbh};
 
     my $sth = $dbh->prepare("SELECT MAX(st.datetime_counted)
-                   FROM Stock_takes st, Stock_takes_detail sd
-                   WHERE st.id = sd.master_id AND
-                         sd.SKU = ?");
+                             FROM Stock_takes st, Stock_takes_detail sd
+                             WHERE st.id = sd.master_id AND 
+                                   sd.SKU = ?");
 
     $sth->bind_param(1, $sku);
     
     if (!$sth->execute()) {
-	die "get_last_stock_take failed at execute!\n";
+
+	die "impl_find_last_datetime failed at execute";
     }
 
-    my $the_datetime;
+
+    ($datetime_of_st) = $sth->fetchrow_array();
 
 
-    ($the_datetime) = $sth->fetchrow_array();
+    return $datetime_of_st;
+}
+
+# impl_find_last_datetime_at_stockroom
+#
+# Finds the most recent stock take of a product, for a particular
+# stockroom, and returns its date. If there is no stock take
+# then impl_find_last_datetime_at_stockroom returns undef.
+#
+# sku:             Product's sku
+# stockroom_id:    Stockroom's id
+#
+sub impl_find_last_datetime_at_stockroom {
+    my $self = shift;
+    my $sku = shift;
+    my $stockroom_id = shift;
+
+    if (!defined($stockroom_id)) {
+	Carp::confess("stockroom_id must be defined!");
+    }
 
 
-    my %stock_take;
+    my $dbh = $self->{dbh};
     
-    if (!defined($the_datetime)) {
-	$stock_take{sku} = undef;
-	$stock_take{qty_counted} = undef;
-	$stock_take{datetime} = undef;
-	
-	return %stock_take;
-    } else {
-	print "Date = " . $the_datetime . "\n";
-    }
-
-
-    $date_of_st = $db_parser->parse_datetime($the_datetime);
-
-    $sth = $dbh->prepare("SELECT SKU, qty_counted
-                          FROM Stock_takes st, Stock_takes_detail sd
-                          WHERE st.id = sd.master_id AND
-                                sd.SKU = ? AND st.datetime_counted = ?");
-
-    $sth->bind_param(1, $sku, DBI::SQL_INTEGER);
-    $sth->bind_param(2, $the_datetime, DBI::SQL_VARCHAR);
-
-    print "SKU = " . $sku .  "\n";
-    print "the_datetime = " . $the_datetime . "\n";
-
+    my $sth = $dbh->prepare("SELECT MAX(st.datetime_counted)
+                             FROM Stock_takes st, Stock_takes_detail sd
+                             WHERE st.id = sd.master_id AND 
+                                   sd.SKU = ? AND
+                                   stockroom_id = ?");
+    
+    $sth->bind_param(1, $sku);
+    $sth->bind_param(2, $stockroom_id);
+    
+    
     if (!$sth->execute()) {
-	die "get_last_stock_failed at execute!\n";
+
+	die "impl_find_last_datetime failed at execute";
     }
 
 
-    my $qty_counted;
-    my $s;
-    my $qty;
+    my $datetime_of_st;
+    
+    ($datetime_of_st) = $sth->fetchrow_array();
 
-    while(($s, $qty) = $sth->fetchrow_array()) {
+    return $datetime_of_st;
+}
+
+
+# impl_retrieve_stock_take_from_stmt
+#
+# This is a helper method
+sub impl_retrieve_stock_take_from_stmt {
+    my $self = shift;
+    my $sth = shift;
+    my $the_datetime = shift;
+    
+    my $sku;
+    my $qty_counted;
+    
+    my $i = 0;
+    
+    while(my ($s, $qty) = $sth->fetchrow_array()) {
 	$sku = $s;
 	$qty_counted = $qty;
+	$i++;
+    }
+    
+    if ($i > 1) {
+	die "Two stock takes with the same datetime";
+    }
+    
+
+    if (!defined($qty_counted) || !defined($sku) || !defined($the_datetime)) {
+	return ();
     }
 
-    if (!defined($qty_counted)) {
-	return undef;
-    }
-
+    my %stock_take;
 
     $stock_take{sku} = $sku;
     $stock_take{qty_counted}  = $qty_counted;
-    $stock_take{datetime} = $date_of_st;
-
+    print "QTY_counted = " . $qty_counted . "\n";
+    
+    $stock_take{datetime} = $self->impl_parse_datetime($the_datetime);
 
     return %stock_take;
 }
 
 
+
+# StockTakes::get_last_stock_take_by_sku_at_stockroom
+#
+# Retrieve a product's last stock take by using the product's
+# sku. The returned stock take is in the form of a hash
+# {:sku, :qty_counted, :datetime}
+#
+# Precondition: stockroom_id is a valid stockroom_id
+#               sku is some product's sku number
+#
+# sku:            Product's SKU
+# stockroom_id:   Stockrooms ID
+#
+sub get_last_stock_take_by_sku_at_stockroom {
+    my $self = shift;
+    my $sku = shift;
+    my $stockroom_id = shift;
+
+    my $dbh = $self->{dbh};
+
+    if (!defined($stockroom_id)) {
+	Carp::confess("stockroom_id must be defined!");
+    }
+
+    if (ref($stockroom_id) ne "") {
+	Carp::confess("stockroom_id must be a scalar!");
+    }
+    
+    
+
+    my $the_datetime_str = $self
+	->impl_find_last_datetime_at_stockroom($sku,
+					       $stockroom_id);
+    
+    
+    if (!defined($the_datetime_str)) {
+	return ();
+    }
+
+    
+    
+
+    my $sth = $dbh->prepare("SELECT SKU, qty_counted
+                             FROM Stock_takes st, Stock_takes_detail sd
+                             WHERE st.id = sd.master_id AND
+                                   sd.SKU = ? AND
+                                   st.datetime_counted = ? AND
+                                   st.stockroom_id = ?");
+
+
+    $sth->bind_param(1, $sku);
+    $sth->bind_param(2, $the_datetime_str);
+    $sth->bind_param(3, $stockroom_id);
+
+    if (!$sth->execute()) {
+	die "get_last_stock_take_by_sku_at_stockroom failed at execute!";
+
+    }
+
+    my $sk; my $qty_counted;
+
+
+    ($sk, $qty_counted) = $sth->fetchrow_array();
+
+
+    if (!defined($sku)) {
+	return ();
+    }
+    
+    my %stock_take;
+
+    $stock_take{sku} = $sk;
+    $stock_take{qty_counted} = $qty_counted;
+
+    
+    $stock_take{datetime} = $self->impl_parse_datetime($the_datetime_str);
+	
+    return %stock_take;
+    
+#    return $self->impl_retrieve_stock_take_from_stmt($sth, $the_datetime_str);
+}
+
+
+
+
+# TODO: Remove coded out comments
+#
+#sub get_last_stock_take_by_sku {
+ #   my $self = shift;
+ #   my $sku = shift;
+ #   
+ #   my $dbh = $self->{dbh};
+
+#    my $the_datetime_str = $self->impl_find_last_datetime($sku);
+
+
+ #   if (!defined($the_datetime_str)) {
+#	return ();
+	
+#	$stock_take{sku} = undef;
+#	$stock_take{qty_counted} = undef;
+#	$stock_take{datetime} = undef;
+	
+#	return %stock_take;
+ #   } 
+
+
+#    my $sth = $dbh->prepare("SELECT SKU, qty_counted
+ #                         FROM Stock_takes st, Stock_takes_detail sd
+ #                         WHERE st.id = sd.master_id AND
+ #                               sd.SKU = ? AND st.datetime_counted = ?");
+#
+#    $sth->bind_param(1, $sku);
+#    $sth->bind_param(2, $the_datetime_str);
+#
+#    if (!$sth->execute()) {#
+#	die "get_last_stock_failed at execute!\n";
+#    }
+
+
+#    my $sk; my $qty_counted;
+
+
+#    while(($sk, $qty_counted) = $sth->fetchrow_array()) {
+
+
+
+
+ #   }
+
+
+  #  if (!defined($sk)) {
+#	return ();
+  #  }
+ #   
+  #  my %stock_take;
+
+#    $stock_take{sku} = $sk;
+ #   $stock_take{qty_counted} = $qty_counted;
+
+    
+  #  $stock_take{datetime} = $self->impl_parse_datetime($the_datetime_str);
+	
+#    return %stock_take;
+    
+ #   return $self->impl_retrieve_stock_take_from_stmt($sth, $the_datetime_str);
+#}
+
+
+
+# StockTakes::check_if_conflict
+#
+#
+# Check if another stock take with the same datetime, stockroom and sku exists
+sub conflict {
+    my $self = shift;
+    my $stock_take_id = shift;
+    my $sku = shift;
+     
+    
+    my $dbh = $self->{dbh};
+    
+
+
+    my $sth = $dbh->prepare("SELECT COUNT(*)
+                             FROM Stock_takes st, Stock_takes_detail sd, 
+                                  Stock_takes curr
+                             WHERE st.datetime_counted 
+                                      = curr.datetime_counted AND
+                                   sd.master_id = st.id AND
+                                   sd.sku = ? AND
+                                   curr.id = ? AND
+                                   st.stockroom_id = curr.stockroom_id"
+                                );
+
+    $sth->bind_param(1, $sku);
+    
+    $sth->bind_param(2, $stock_take_id);
+
+    if (!$sth->execute()) {
+	die "StockTake::check_if_conflict failed at execute!\n";
+    }
+
+    my $no_of_conflicts;
+
+    ($no_of_conflicts) = $sth->fetchrow_array();
+
+
+    return $no_of_conflicts > 0;    
+}
+
+    
+
+# begin_stock_take
+#
+# Begins a new stock take with no entries. Returns the id of the 
+# stock take so that entries may be latter added to the stock take.
+#
 sub begin_stock_take {
     my $self = shift;
 
     my $datetime = shift;
+    my $stockroom = shift;
 
-
+    if (ref($stockroom) ne "DB::Stockroom") {
+	Carp::confess("stockroom must be a DB::Stockroom object!");
+    }
+    
     my $dbh = $self->{dbh};
 
+    my $stockrooms = DB::Stockrooms($dbh);
+    my $stockroom_id = $stockrooms->stockroom_id($stockroom->get_name());
+    
     my $db_parser = DateTime::Format::DBI->new($dbh);
 
 
 
     my $datetime_str = $db_parser->format_datetime($datetime);
 
-    my $sth = $dbh->prepare("INSERT INTO Stock_takes(id, datetime_counted)
-                             VALUES(NULL, ?)");
-    
-    $sth->bind_param(1, $datetime);
 
+    
+    my $sth = $dbh->prepare("INSERT INTO Stock_takes(id, datetime_counted, stockroom_id)
+                             VALUES(NULL, ?, ?)");
+    
+    $sth->bind_param(1, $datetime_str);
+    $sth->bind_param(2, $stockroom_id);
 
     if (!$sth->execute()) {
 	die "begin_stock_take failed at execute!\n";
@@ -163,17 +439,26 @@ sub begin_stock_take {
 }
 
 
+# StockTakes::insert_into
+#
+# Insert a stock take into a master stock takes record
+#
+# stock_take_id:   id of master stock take
+# stock_take_info: information about the stock take
 sub insert_into {
     my $self = shift;
     my $stock_take_id = shift;
     my $stock_take_info = shift;
 
 
+
     my $dbh = $self->{dbh};
     
 
-
+    
     my $upc = $stock_take_info->get_upc();
+
+    print "ref(upc) = " . ref($upc) . "\n";
 
 #    print "upc = " . $upc->str() . "\n";
 #    print "UPC = " . $stock_take_info->get_upc()->str() . "\n";
@@ -193,27 +478,36 @@ sub insert_into {
 
 
     my $sku = $product->get_sku();
+    
+    if ($self->conflict($stock_take_id, $sku)) {
+	die "Adding $sku to stock take $stock_take_id conflicts with\n"
+	    . "another stock take";
+             
+
+    }
+    
 
     my $qty_counted = $stock_take_info->get_qty_counted();
 
 
-    my $sth = $dbh->prepare("SELECT unit FROM Products WHERE SKU = ?");
+#    my $sth = $dbh->prepare("SELECT unit FROM Products WHERE SKU = ?");
 
-    $sth->bind_param(1, $sku);
+#    $sth->bind_param(1, $sku);
 
-    if (!$sth->execute()) {
-	die "insert_into failed at execute!\n";
-    }
+#    if (!$sth->execute()) {
+#	die "insert_into failed at execute!\n";
+ #   }
     
 
-    my ($unit) = $sth->fetchrow_array();
+#    my ($unit) = $sth->fetchrow_array();
 
 
-    my $qty_counted_in_units = defined($unit) && $unit > 0? $qty_counted * $unit : $qty_counted;
+#    my $qty_counted_in_units = defined($unit) && $unit > 0? $qty_counted * $unit : $qty_counted;
 
-    
 
-    $sth = $dbh->prepare("INSERT INTO Stock_takes_detail(id, master_id, SKU, qty_counted)
+
+    my $sth = $dbh->prepare("INSERT INTO Stock_takes_detail(id, 
+                                       master_id, SKU, qty_counted)
                              Values(NULL, ?, ?, ?)");
 
 
@@ -221,7 +515,7 @@ sub insert_into {
 
     $sth->bind_param(1, $stock_take_id);
     $sth->bind_param(2, $sku);
-    $sth->bind_param(3, $qty_counted_in_units);
+    $sth->bind_param(3, $qty_counted);
 
 
     if (!$sth->execute()) {

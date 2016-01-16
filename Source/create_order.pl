@@ -9,6 +9,7 @@ use Excel::Writer::XLSX;
 use DB::Products;
 use DB::Product;
 
+my $db_filename = "../Data/p.db";
 
 
 my $dbh;
@@ -16,7 +17,7 @@ my $pi;
 
 
 
-$dbh = DBI->connect("dbi:SQLite:dbname=p.db", "", "",
+$dbh = DBI->connect("dbi:SQLite:dbname=$db_filename", "", "",
 		    {RaiseError => 1});
 
 
@@ -71,9 +72,22 @@ while($product = $pi->fetch_product()) {
    
 
     my $description = $product->get_description();
+    my $resnick_unit;
 
-    $qty_on_hand = $product->get_qty_on_hand() if defined($product->get_qty_on_hand());
+
+    $qty_on_hand = $product->get_qty_on_hand() 
+	if defined($product->get_qty_on_hand());
+
     $unit        = $product->get_unit() if defined($product->get_unit());
+#    $resnick_unit = $unit;
+    
+#    if ($description =~ /^MARL.*/ || $description =~ /^NEWPORT.*/
+#	|| $description =~ /^CAMEL.*/) {
+#	$resnick_unit *= 10;
+	
+#    }
+
+
     $par         = $product->get_par() if defined($product->get_par());
     $eoq         = $product->get_eoq() if defined($product->get_eoq());
     $case_pack   = $product->get_case_pack() if defined($product->get_case_pack());

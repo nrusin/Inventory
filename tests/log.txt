@@ -1,0 +1,62 @@
+1..19
+XLSX::new with TEST_PRODUCT_LIST.xlsx
+ok 1 - check qty at hand test_product.info:1
+
+replenishment
+stockroom = Airport
+beginning_datetime = 2016-01-03T00:00:00
+ending_datetime = 2016-01-03T00:00:00
+4 6
+
+
+replenishment
+stockroom = Genco
+beginning_datetime = 2016-01-03T00:00:00
+ending_datetime = 2016-01-03T00:00:00
+2
+
+
+stock take
+stockroom = Airport
+datetime = 2016-01-02T00:00:00
+qty_on_hand = 100
+
+
+stock take
+stockroom = Airport
+datetime = 2016-01-03T00:00:00
+qty_on_hand = 50
+
+
+stock take
+stockroom = Genco
+datetime = 2016-01-03T00:00:00
+qty_on_hand = 20
+
+stock take
+stockroom = Genco
+datetime = 2015-12-31T00:00:00
+qty_on_hand = 10
+
+transfer
+stockroom_from:Airport
+stockroom_to:Genco
+datetime:2016-01-04T00:00:00
+transfered_qty:10
+
+transfer
+stockroom_from:Genco
+stockroom_to:Airport
+datetime:2016-01-05T00:00:00
+transfered_qty:20
+
+
+invoice
+stockroom: Genco
+datetime: 2016-01-06T00:00:00
+received: 100
+
+invoice
+stockroom: Airport
+datetime: 2016-01-06T00:00:00
+received: 50 150

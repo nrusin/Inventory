@@ -1,7 +1,20 @@
+#!/usr/bin/perl
+
+
+use warnings;
+use strict;
+
+use DateTime;
 use DBI;
+use Core::Upc;
+use Core::ReplenishmentEntry;
+use DB::SchemaBuilder;
+use DB::Product;
+use DB::Replenishments;
 
 
-my $dbh = DBI->connect("dbi:SQLite:dbname=p.db","","",
+
+my $dbh = DBI->connect("dbi:SQLite:dbname=test_database.db","","",
                  { RaiseError => 1});
 
 $dbh->{RaiseError}  = 1;
@@ -15,7 +28,7 @@ eval {
     }
 
 
-    my $sb = new SchemaBuilder($dbh);
+    my $sb = new DB::SchemaBuilder($dbh);
 
 
     $sb->unbuild();
@@ -23,10 +36,10 @@ eval {
 
 
 
-    my $sku = Product->make_product($dbh);
+    my $sku = DB::Product->make_product($dbh);
 
 
-    my $product = Product->new($dbh, $sku);
+    my $product = DB::Product->new($dbh, $sku);
 
 
 
@@ -111,7 +124,7 @@ eval {
     }
 
     my $upc_str = "040000000327";
-    my $upc = Upc->new($upc_str);
+    my $upc = Core::Upc->new($upc_str);
 
     $product->set_upc($upc);
 
@@ -310,7 +323,7 @@ eval {
     $product_info->set_cost(10.00);
     $product_info->set_unit_cost(14.05);
 
-    $product_info->set_upc(Upc->new("123456789999"));
+    $product_info->set_upc(Core::Upc->new("123456789999"));
 
     $product_info->set_department_no(14);
     $product_info->set_par(30);
@@ -419,7 +432,7 @@ $upc = undef;
 
 #print "at 416 dbh = $dbh\n";
 
-my $products = new Products($dbh);
+my $products = new DB::Products($dbh);
 
 
 #$product_info = ProductInfo->new();
@@ -434,7 +447,7 @@ my $products = new Products($dbh);
 #$products->insert($product_info);
 
 
-foreach $d (@data) {
+foreach my $d (@data) {
     print "d = $d, i = $i\n";
 
     if ($i == 0) {
@@ -466,7 +479,7 @@ foreach $d (@data) {
 
 	print "upc = $upc\n";
 
-	my $product_info = ProductInfo->new();
+	my $product_info = DB::ProductInfo->new();
 
 	$product_info->set_item_no($item_no);
 	$product_info->set_description($description);
@@ -474,7 +487,7 @@ foreach $d (@data) {
 	$product_info->set_case_pack($case_pack);
 	$product_info->set_cost($cost);
 	$product_info->set_unit_cost($unit_cost);
-	$product_info->set_upc(Upc->new($upc));
+	$product_info->set_upc(Core::Upc->new($upc));
 
 	$products->insert($product_info);
 
@@ -487,14 +500,14 @@ foreach $d (@data) {
 }
 
 
-my $p = $products->lookup_by_upc(Upc->new("014054030715"));
+my $p = $products->lookup_by_upc(Core::Upc->new("014054030715"));
 if ($p->get_description() ne  "ODWALLA MANGO PROTEIN 15.2Z  !") {
     die "test_db failed at get_description() ne ODWALLA MANGO PROTEIN 15.2Z   !\n";
 }
 
 
 
-my $prdt = $products->lookup_by_upc(Upc->new("028200004659"));
+my $prdt = $products->lookup_by_upc(Core::Upc->new("028200004659"));
 
 if (defined($prdt)) {
     print "The description = " . $prdt->get_description() . "\n";
@@ -505,7 +518,7 @@ if (defined($prdt)) {
 };
 
 
-my $replenishments = Replenishments->new($dbh);
+my $replenishments = DB::Replenishments->new($dbh);
 
 
 my $rid;
@@ -537,10 +550,11 @@ my @items = (["ODWALLA MANGO PROTEIN 15.2Z",    "014054030715", 1],
 foreach my $item (@items) {
     my @item_arry = @{$item};
 
-    $re = ReplenishmentEntry->new($item_arry[1], 10.00, 
+    $re = Core::ReplenishmentEntry->new($item_arry[1], 10.00, 
 				  $item_arry[0], $item_arry[2]);
 
-
+    print "inserting into replenishments $rid, " . $re->get_upc()->str() . "\n";
+    
     $replenishments->insert_into($rid, $re);
 }
 
@@ -548,12 +562,12 @@ foreach my $item (@items) {
     my @item_arry = @{$item};
 
     my $qty_sold = $replenishments->lookup_qty_sold_by_upc(
-	Upc->new($item_arry[1]), DateTime->new(
+	Core::Upc->new($item_arry[1]), DateTime->new(
 	    {month=>3, day=>1, year=>2015}));
 
 
     if ($qty_sold != $item_arry[2]) {
-	die "test_db failed at $qty_sold != $item_arry[2],  $item_arry[0]";
+	die "test_db failed at $qty_sold != $item_arry[2] $item_arry[1],  $item_arry[0]";
 
     }
 

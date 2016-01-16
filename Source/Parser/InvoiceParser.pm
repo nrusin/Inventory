@@ -79,6 +79,8 @@ sub elem {
 sub get_invoice_entry {
     my $self = shift;
 
+    print $self->{row} . "\n";
+
     my $invoice_entry = Core::InvoiceInfo->new();
 
     my $col = $self->{sheet}->{MinCol};
@@ -86,41 +88,69 @@ sub get_invoice_entry {
 
     my @headers = @{$self->{headers}};
 
-
-    my %invoice_entry;
+#    my %invoice_entry;
     
 
+    my $sku;
+    my $qty_received;
+
+    # Skip blank lines
+#    my $v = "";
+    
+#    while ($v =~ /^\s*$/) {
+#	$v = $self->elem($self->{row}, $col);
+
+#	$self->{row}++;
+#    }
+    
     foreach my $header (@headers) {
+	print "header = $header\n";
+	
+	my $item_no;
+	my $description;
+	my $upc_str;
+	my $unit;
+	my $cost_per_unit;
+	my $cost;
+
 	my $val = $self->elem($self->{row}, $col);
 
 	if ($header eq "Item #") {
-	    $invoice_entry{item_no} = $val;
+	    $item_no = $val;
 
 	} elsif ($header eq "Description") {
-	    $invoice_entry{description} = $val;
-
+	    $description = $val;
 	} elsif ($header eq "UPC") {
-	    $invoice_entry{upc_str} = $val;
-
+	    $upc_str = $val;
 	} elsif ($header eq "Unit") {
-	    $invoice_entry{unit} = $val;
+	    $unit = $val;
 
-	} elsif ($header eq "Quantity Received") {
-	    $invoice_entry{qty_received} = $val;
-
+	} elsif ($header eq "Quantity Received(pcs)") {
+	    $qty_received = $val;
 	} elsif ($header eq "Cost per Unit") {
-	    $invoice_entry{cost_per_unit} = $val;
+	    $cost_per_unit = $val;
 	} elsif ($header eq "Cost") {
-	    $invoice_entry{cost} = $val;
-
+	    $cost = $val;
+	    
+	} elsif ($header eq "SKU") {
+	    $sku = $val;
 	}
-
-
+	
 	$col++;
 
     }
+    
+    my $invoice_info = Core::InvoiceInfo->new();
 
-    return %invoice_entry;
+    if (defined($sku) && defined($qty_received)) {
+	$invoice_info->set_sku($sku);
+	$invoice_info->set_qty_received($qty_received);
+
+	return $invoice_info;
+    }
+
+
+    return undef;
 }
 
 sub read_department_header {
@@ -164,7 +194,6 @@ sub read_header {
     my $date_str = $self->elem($self->{row}, $sheet->{MinCol} + 1);
     
     print "date_str = $date_str\n";
-
 
     $self->{datetime_of_invoice} = DateTime::Format::Excel->parse_datetime($date_str);
     

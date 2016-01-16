@@ -1,0 +1,64 @@
+#!/usr/bin/perl
+
+use warnings;
+use strict;
+
+
+package DB::Stockrooms;
+
+
+sub new {
+    my $class = shift;
+    my $self = { dbh => shift };
+
+
+
+    bless $self, $class;
+
+}
+
+
+sub get_iterator {
+
+    return DB::Stockrooms_iterator->new($dbh);
+
+}
+
+
+
+package DB::Stockrooms_iterator;
+
+
+sub new {
+    my $class = shift;
+    my $self = { dbh => shift, sth => undef };
+
+
+
+    $self->{sth} = $self->{dbh}->prepare("SELECT * FROM Stockrooms");
+
+
+    if (!$self->{sth}->execute()) {
+	die "Execute failed!";
+
+    }
+    
+    bless $self, $class;
+
+}
+
+
+sub fetch {
+
+
+
+}
+
+
+
+
+
+
+
+
+1

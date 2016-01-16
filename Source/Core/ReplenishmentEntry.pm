@@ -3,6 +3,7 @@
 use warnings;
 use strict;
 use Carp;
+use Core::Upc;
 
 package Core::ReplenishmentEntry;
 
@@ -21,8 +22,12 @@ sub new {
     if (@_ != 0) {
 
 	my $upc_str = shift;
-
-	$self->{upc} = Upc->new($upc_str);
+	
+	if (ref($upc_str) ne "") {
+	    die "upc passed into constructor must be a string: " . ref($upc_str);
+	}
+	
+	$self->{upc} = Core::Upc->new($upc_str);
 	$self->{price} = shift;
 	$self->{description} = shift;
 	$self->{qty_sold} = shift;
@@ -63,6 +68,11 @@ sub set_upc {
 
     my $upc = shift;
 
+    if (ref($upc) ne "Core::Upc") {
+	die "In set_upc must be called with Core::Upc parameter";
+
+    }
+    
     $self->{upc} = $upc;
 
 }
